@@ -1,7 +1,6 @@
-const backend = require('electron')
+const backend = require('electron').remote
+const mainService = backend.require('./service/mainService.js')
 
 function openChat(){
-    const { BrowserWindow } = require('electron').remote
-    let win = new BrowserWindow({ width: 800, height: 600 })
-    win.loadURL('resources/chat.html')
+    mainService.openChatWindow()
 }

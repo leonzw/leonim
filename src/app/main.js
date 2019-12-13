@@ -1,15 +1,17 @@
 const { app, BrowserWindow } = require('electron')
-
+const path = require('path');
+const config = require(path.join(app.getAppPath(), "src","config.json"))
 
 // 保持对window对象的全局引用，如果不这么做的话，当JavaScript对象被
 // 垃圾回收的时候，window对象将会自动的关闭
 let win
 
+
 function createWindow () {
   // 创建浏览器窗口。
   win = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: 400,
+    height: 200,
     webPreferences: {
       nodeIntegration: true
     }
@@ -19,7 +21,7 @@ function createWindow () {
   win.loadFile('src/resources/index.html')
 
   // 打开开发者工具
-  win.webContents.openDevTools()
+  //if (config.openDebugTool) win.webContents.openDevTools()
 
   // 当 window 被关闭，这个事件会被触发。
   win.on('closed', () => {
@@ -54,3 +56,4 @@ app.on('activate', () => {
 
 // 在这个文件中，你可以续写应用剩下主进程代码。
 // 也可以拆分成几个文件，然后用 require 导入。
+
