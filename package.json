@@ -1,0 +1,21 @@
+{
+  "name": "leonim",
+  "version": "1.0.0",
+  "description": "IM for personal use",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "pi:/data/repo/projects/nodejs/leonim.git"
+  },
+  "keywords": [
+    "IM"
+  ],
+  "author": "Leon Zhao",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^7.1.4"
+  }
+}
