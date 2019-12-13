@@ -20,16 +20,18 @@
   "author": "Leon Zhao",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^7.1.4"
+    "electron": "^7.1.4",
+    "grunt": "^1.0.4",
+    "grunt-electron-installer": "^2.1.0"
   },
   "build": {
     "appId": "com.leon",
     "copyright": "Leon",
     "compression": "normal",
     "nsis": {
-        "oneClick": true,
-        "perMachine": true,
-        "runAfterFinish": true
+      "oneClick": true,
+      "perMachine": true,
+      "runAfterFinish": true
     }
   }
 }

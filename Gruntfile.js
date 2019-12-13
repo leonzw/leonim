@@ -3,9 +3,10 @@ grunt.config.init({
         pkg: grunt.file.readJSON('gruntPackage.json'),
         'create-windows-installer': {
                 ia32: {
-                        appDirectory: 'SNM Quick Start-win32-ia32',
+                        appDirectory: '../../src',
+                        outputDirectory: '/tmp/build/installer32',
                         authors: 'Leon Zhao',
-                        exe: 'SNM Quick Start.exe',
+                        exe: 'leonim.exe',
                         description: "Leon personal family IM",
                 }       
         }
