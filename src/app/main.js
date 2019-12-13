@@ -8,8 +8,8 @@ let win
 function createWindow () {
   // 创建浏览器窗口。
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1920,
+    height: 1080,
     webPreferences: {
       nodeIntegration: true
     }
@@ -19,7 +19,7 @@ function createWindow () {
   win.loadFile('src/resources/index.html')
 
   // 打开开发者工具
-  //win.webContents.openDevTools()
+  win.webContents.openDevTools()
 
   // 当 window 被关闭，这个事件会被触发。
   win.on('closed', () => {
