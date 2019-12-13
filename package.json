@@ -6,9 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "package": "electron-packager . --platform=win32 --arch=ia32 --electron-version=1.4.15 --overwrite --ignore=node_modules --ignore=.gitignore",
-    "pack": "build --win --ia32 --dir",
-    "dist": "build --win --ia32"
+    "build:pack": "electron-builder --dir",
+    "build:dist": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -21,17 +20,14 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^7.1.4",
+    "electron-builder": "^21.2.0",
+    "electron-packager": "^14.1.1",
     "grunt": "^1.0.4",
     "grunt-electron-installer": "^2.1.0"
   },
   "build": {
-    "appId": "com.leon",
-    "copyright": "Leon",
-    "compression": "normal",
-    "nsis": {
-      "oneClick": true,
-      "perMachine": true,
-      "runAfterFinish": true
-    }
+    "appId": "com.leon.app",
+    "copyright": "Copyright © 2019 ${author}",
+    "productName": "leonim"
   }
 }
