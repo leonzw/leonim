@@ -10,3 +10,4 @@ module.exports.openChatWindow = () => {
         chatWindow = null;
     })
 }
+
