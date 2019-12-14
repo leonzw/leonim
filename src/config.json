@@ -1,5 +1,9 @@
 {
   "debug"   : true,
   "mockup"  : true,
-  "openDebugTool" : true
+  "openDebugTool" : true,
+  "ws" : {
+    "server" : "localhost",
+    "port"   : 33533
+  }
 }

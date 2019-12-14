@@ -29,5 +29,8 @@
     "appId": "com.leon.app",
     "copyright": "Copyright © 2019 ${author}",
     "productName": "leonim"
+  },
+  "dependencies": {
+    "nodejs-websocket": "^1.7.2"
   }
 }
