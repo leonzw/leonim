@@ -4,6 +4,6 @@
   "openDebugTool" : true,
   "ws" : {
     "server" : "localhost",
-    "port"   : 33533
+    "port"   : 33133
   }
 }
