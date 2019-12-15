@@ -17,7 +17,7 @@ ipcMain.on('msg-send',sendMsg)
 function connect(){
     this.wsConnection = ws.connect(wsUrl, ()=>{
         console.log("Connected")
-        var login_data = '{"type":"login","client_name":"abc","room_id":1}';
+        var login_data = '{"type":"login","client_name":"'+mainService.getUser()+'","room_id":1}';
         console.log("websocket握手成功，发送登录数据:"+login_data);
         this.wsConnection.send(login_data);
         //console.log(login_data)
@@ -61,6 +61,7 @@ function onMessage(str,wsConnection){
             //flush_client_list();
             clientId = data['client_id']
             clientName = data['client_name']
+            mainService.getWin().webContents.send('msg-contactList', str)
             break;
         // 发言
         case 'say':

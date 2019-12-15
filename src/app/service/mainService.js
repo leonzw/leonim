@@ -23,8 +23,8 @@ exports.openChatWindow = (username,password) =>{
     /**
      * Connect Web socket and run as service
      */
-    console.log(username)
-    console.log(password)
+
+    user = username
 
     /**
      * Open chat window
@@ -144,4 +144,6 @@ exports.createMainWindow = () => {
 module.exports.getWin = () => {
     return win
 }
-module.exports.user = user
+module.exports.getUser = () => {
+    return user
+}
