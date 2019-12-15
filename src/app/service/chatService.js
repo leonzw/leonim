@@ -1,4 +1,4 @@
-const { app,BrowserWindow } = require('electron')
+const { app } = require('electron')
 const path = require('path');
 const config = require(path.join(app.getAppPath(), "src","config.json"))
 let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
@@ -6,11 +6,7 @@ var ws = require("nodejs-websocket")
 var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
 var wsConnection = null
 
-console.log(mainService.win)
 
-function onConnect (data){
-
-}
 
 function connect(wsConnection){
     wsConnection = ws.connect(wsUrl, ()=>{
@@ -26,7 +22,7 @@ function connect(wsConnection){
 
     wsConnection.on('text', (str)=>{
         //console.log(str)
-        onMessage(str)
+        onMessage(str,wsConnection)
     })
 
     wsConnection.on('close', ()=> {
@@ -36,8 +32,8 @@ function connect(wsConnection){
 }
 
 
-function onMessage(str){
-    console.log(str);
+function onMessage(str,wsConnection){
+    console.log("===服务短消息 : " + str);
     var data = JSON.parse(str);
     switch(data['type']){
         // 服务端ping客户端
@@ -62,7 +58,8 @@ function onMessage(str){
         // 发言
         case 'say':
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
-            mainService.win.BrowserWindow.webContents.send('msg-receive', data)
+            mainService.getWin().webContents.send('msg-receive', str)
+            //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
             break;
         // 用户退出 更新用户列表
         // case 'logout':

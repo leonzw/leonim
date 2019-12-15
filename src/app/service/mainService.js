@@ -3,7 +3,6 @@ const electron = require('electron');
 const path = require('path');
 const config = require(path.join(app.getAppPath(), "src","config.json"))
 const {spawn} = require('child_process');
-//let chatService  = require(path.join(app.getAppPath(), "src", "app
 
 
 "use strict"
@@ -30,7 +29,7 @@ exports.openChatWindow = (username,password) =>{
     /**
      * Open chat window
      */
-    console.log(win)
+    //console.log(win)
     win.setSize(1280,800)
     win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
 }
@@ -142,5 +141,7 @@ exports.createMainWindow = () => {
 }
 
 
-module.exports.win = win
+module.exports.getWin = () => {
+    return win
+}
 module.exports.user = user
