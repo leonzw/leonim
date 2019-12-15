@@ -3,7 +3,7 @@
   "mockup"  : true,
   "openDebugTool" : true,
   "ws" : {
-    "server" : "localhost",
+    "server" : "47.104.56.147",
     "port"   : 33133
   }
 }
