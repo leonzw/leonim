@@ -11,7 +11,6 @@ function onMessage(event,message){
     var data = JSON.parse(message);
 
     console.log(data)
-    console.log(chatService.getChatClientInfo())
 
     let from_client_id = data['from_client_id']
     let from_client_name = data['from_client_name']
@@ -41,7 +40,7 @@ function flushContactList(event, message){
     var contactList = data['client_list']
     for (contactId in contactList){
         if (contactId != chatService.getChatClientInfo().clientId){
-            $('#contactList').append('<div class="chat_list">\n' +
+            $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,contactId)">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
@@ -52,4 +51,9 @@ function flushContactList(event, message){
                 '                    </div>')
         }
     }
+}
+
+function changeTarget(target, contactId) {
+    target.addr();
+    console.log(contactId)
 }
