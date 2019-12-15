@@ -17,16 +17,33 @@ function onMessage(event,message){
     let content = data['content']
     let time = data['time']
 
-    $("#msg_history").append(
-        '<div class="incoming_msg">\n' +
-        '  <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
-        '  <div class="received_msg">\n' +
-        '  <div class="received_withd_msg">\n' +
-        '    <p>'+content+'</p>\n' +
-        '    <span class="time_date">'+time+'</span></div>\n' +
-        '  </div>\n' +
-        '</div>' +
-        '');
+    if (from_client_id == chatService.getChatClientInfo().clientId){
+        /**
+         * 自己发出的留言，显示在自己这边
+         */
+        $("#msg_history").append('' +
+            '                    <div class="outgoing_msg">\n' +
+            '                        <div class="sent_msg">\n' +
+            '                            <p>'+content+'</p>\n' +
+            '                            <span class="time_date">'+time+'</span> </div>\n' +
+            '                    </div>')
+    }else{
+        $("#msg_history").append(
+            '<div class="incoming_msg">\n' +
+            '  <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+            '  <div class="received_msg">\n' +
+            '  <div class="received_withd_msg">\n' +
+            '    <p>'+content+'</p>\n' +
+            '    <span class="time_date">'+time+'</span></div>\n' +
+            '  </div>\n' +
+            '</div>' +
+            '');
+    }
+
+    var msg_history = $("#msg_history")
+    var top_height = msg_history.prop("scrollHeight") - msg_history.height()
+    msg_history.animate({ scrollTop: top_height }, 500);
+
 }
 
 function sendMsg(){
@@ -36,8 +53,8 @@ function sendMsg(){
 }
 
 function flushContactList(event, message){
-    var data = JSON.parse(message)
-    var contactList = data['client_list']
+    var contactList = message
+    $('#contactList').empty()
     for (contactId in contactList){
         if (contactId != chatService.getChatClientInfo().clientId){
             $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,\''+contactId.trim()+'\')">\n' +
@@ -56,5 +73,4 @@ function flushContactList(event, message){
 function changeTarget(target, cid) {
     target.setAttribute("class", "chat_list active_chat")
     ipcRenderer.send('msg-targetClient', cid)
-    console.log("msg-targetClient set target client id to " + cid)
 }

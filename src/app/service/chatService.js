@@ -51,7 +51,7 @@ function onMessage(str,wsConnection){
         case 'login':
             //{"type":"login","client_id":xxx,"client_name":"xxx","client_list":"[...]","time":"xxx"}
             //say(data['client_id'], data['client_name'],  data['client_name']+' 加入了聊天室', data['time']);
-            if(data['client_list'])
+            if(!clientList)
             {
                 clientList = data['client_list'];
             }
@@ -60,9 +60,19 @@ function onMessage(str,wsConnection){
                 clientList[data['client_id']] = data['client_name'];
             }
             //flush_client_list();
-            clientId = data['client_id']
-            clientName = data['client_name']
-            mainService.getWin().webContents.send('msg-contactList', str)
+            
+            if (data['client_name'] == mainService.getUser()){
+                /**
+                 * 当前登录用户，设置一下client_id
+                 */
+                clientId = data['client_id']
+                clientName = data['client_name']
+            }
+            
+
+            console.log("I am " + clientId)
+            console.log(clientList)
+            mainService.getWin().webContents.send('msg-contactList', clientList)
             break;
         // 发言
         case 'say':
@@ -71,11 +81,12 @@ function onMessage(str,wsConnection){
             //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
             break;
         // 用户退出 更新用户列表
-        // case 'logout':
-        //     //{"type":"logout","client_id":xxx,"time":"xxx"}
-        //     say(data['from_client_id'], data['from_client_name'], data['from_client_name']+' 退出了', data['time']);
-        //     delete client_list[data['from_client_id']];
-        //     flush_client_list();
+        case 'logout':
+            //{"type":"logout","client_id":xxx,"time":"xxx"}
+            delete clientList[data['from_client_id']];
+            console.log("I am " + clientId)
+            console.log(clientList)
+            mainService.getWin().webContents.send('msg-contactList', clientList)
     }
 }
 

@@ -52,7 +52,7 @@ exports.createMainWindow = () => {
             title: "wechat聊天自制版",
             skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
             //backgroundColor: '#2e2c29'
-            resizable:false,
+            resizable:true,
             webPreferences: {
                 nodeIntegration: true
             }
@@ -69,7 +69,7 @@ exports.createMainWindow = () => {
             title: "wechat聊天自制版",
             skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
             //backgroundColor: '#2e2c29'
-            resizable:false,
+            resizable:true,
             closable: false,
             webPreferences: {
                 nodeIntegration: true
