@@ -10,7 +10,7 @@ module.exports.wsConnection
 /**
  * 用户列表
  */
-let clientList
+let clientList, clientId, clientName
 
 ipcMain.on('msg-send',sendMsg)
 
@@ -39,7 +39,7 @@ function connect(){
 
 
 function onMessage(str,wsConnection){
-    console.log("===服务短消息 : " + str);
+    console.log("===服务端消息 : " + str);
     var data = JSON.parse(str);
     switch(data['type']){
         // 服务端ping客户端
@@ -59,7 +59,8 @@ function onMessage(str,wsConnection){
                 clientList[data['client_id']] = data['client_name'];
             }
             //flush_client_list();
-            console.log(data['client_name']+"登录成功");
+            clientId = data['client_id']
+            clientName = data['client_name']
             break;
         // 发言
         case 'say':
@@ -97,6 +98,6 @@ module.exports.connect = connect()
 module.exports.getWsConnection = () =>{
     return this.wsConnection
 }
-module.exports.getClientList = () => {
-    return clientList
+module.exports.getChatClientInfo = () => {
+    return {"clientList":clientList, "clientId":clientId, "clientName":clientName}
 }
