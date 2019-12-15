@@ -10,9 +10,10 @@ module.exports.wsConnection
 /**
  * 用户列表
  */
-let clientList, clientId, clientName
+let clientList, clientId, clientName, clientTarget
 
 ipcMain.on('msg-send',sendMsg)
+ipcMain.on('msg-targetClient', changeTarget)
 
 function connect(){
     this.wsConnection = ws.connect(wsUrl, ()=>{
@@ -78,11 +79,16 @@ function onMessage(str,wsConnection){
     }
 }
 
+/**
+ * IpcMain action
+ * @param event
+ * @param msg
+ */
 function sendMsg(event,msg){
     console.log("发送" + msg)
 
-    var to_client_id = "7f00000108ff00000001"
-    var to_client_name = "def"
+    var to_client_id = clientTarget
+    var to_client_name = clientList[clientTarget]
     wsConnection.send(
         '{"type":"say","to_client_id":"'+to_client_id
         +'","to_client_name":"'+to_client_name
@@ -93,6 +99,14 @@ function sendMsg(event,msg){
 
 }
 
+/**
+ * IpcMain Action for change contact
+ * @param event
+ * @param msg
+ */
+function changeTarget(event,msg){
+    clientTarget = msg
+}
 
 
 module.exports.connect = connect()
@@ -100,5 +114,5 @@ module.exports.getWsConnection = () =>{
     return this.wsConnection
 }
 module.exports.getChatClientInfo = () => {
-    return {"clientList":clientList, "clientId":clientId, "clientName":clientName}
+    return {"clientList":clientList, "clientId":clientId, "clientName":clientName, "clientTarget": clientTarget}
 }

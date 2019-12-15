@@ -40,11 +40,11 @@ function flushContactList(event, message){
     var contactList = data['client_list']
     for (contactId in contactList){
         if (contactId != chatService.getChatClientInfo().clientId){
-            $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,contactId)">\n' +
+            $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,\''+contactId.trim()+'\')">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
-                '                                <h5>'+contactList[contactId]+'<span class="chat_date">Dec 25</span></h5>\n' +
+                '                                <h5>'+contactList[contactId]+'\n' +
                 '                                <p>'+contactId+'</p>\n' +
                 '                            </div>\n' +
                 '                        </div>\n' +
@@ -53,7 +53,8 @@ function flushContactList(event, message){
     }
 }
 
-function changeTarget(target, contactId) {
-    target.addr();
-    console.log(contactId)
+function changeTarget(target, cid) {
+    target.setAttribute("class", "chat_list active_chat")
+    ipcRenderer.send('msg-targetClient', cid)
+    console.log("msg-targetClient set target client id to " + cid)
 }
