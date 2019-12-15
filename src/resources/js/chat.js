@@ -3,15 +3,14 @@ const chatService = backend.require('./service/chatService.js')
 const { ipcRenderer } = require('electron')
 
 
-ipcRenderer.on('msg-receive',say)
+ipcRenderer.on('msg-receive',onMessage)
 
 // 发言
-function say(event,message){
-    console.log(message)
-
+function onMessage(event,message){
     var data = JSON.parse(message);
 
     console.log(data)
+    console.log(chatService.getClientList())
 
     let from_client_id = data['from_client_id']
     let from_client_name = data['from_client_name']
@@ -26,4 +25,10 @@ function say(event,message){
         '                                <span class="time_date">'+time+'</span></div>\n' +
         '                        </div>\n' +
         '                    </div>');
+}
+
+function sendMsg(){
+    var msg = $('#sendMsg').val()
+    ipcRenderer.send('msg-send', msg)
+    $('#sendMsg').val(null)
 }
