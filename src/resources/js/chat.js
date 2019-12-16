@@ -71,6 +71,27 @@ function flushContactList(event, message){
 }
 
 function changeTarget(target, cid) {
+    /**
+     * 修改聊天标题
+     */
+    var clientList = chatService.getChatClientInfo().clientList
+    document.getElementById('targetContactTitle').innerText = "与 "+ clientList[cid]+" 聊天中"
+
+    /**
+     * 找到已有的高亮，去掉高亮
+     */
+    var oldTarget = document.querySelector("div[class='chat_list active_chat']");
+    if (oldTarget != null) oldTarget.setAttribute("class", "chat_list")
+
+    /**
+     * 新的目标选中高亮
+     */
     target.setAttribute("class", "chat_list active_chat")
+
+    /**
+     * 通知后台服务更新目标
+     */
     ipcRenderer.send('msg-targetClient', cid)
 }
+
+
