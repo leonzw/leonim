@@ -54,6 +54,19 @@
 <script src="../js/chat.js"></script>
 
 <script type="text/javascript">
+
+    var msgInput = document.querySelector('#sendMsg')
+    msgInput.addEventListener('keydown',event=>{
+        if (event.keyCode === 13 && !event.ctrlKey) {
+            sendMsg()
+            return false
+        }
+
+        if (event.keyCode === 13 && event.ctrlKey){
+            msgInput.value += "\n"
+        }
+    })
+
     // window.jQuery('#sendMsg').on("keydown", function(e) {
     //     // 按enter键自动提交
     //     if(e.keyCode === 13 && !e.ctrlKey) {
