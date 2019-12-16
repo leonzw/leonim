@@ -54,6 +54,7 @@ exports.createMainWindow = () => {
             skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
             //backgroundColor: '#2e2c29'
             resizable:true,
+            icon: path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-sm.png'),
             webPreferences: {
                 nodeIntegration: true
             }
@@ -72,6 +73,7 @@ exports.createMainWindow = () => {
             //backgroundColor: '#2e2c29'
             resizable:true,
             closable: false,
+            icon:path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-sm.png'),
             webPreferences: {
                 nodeIntegration: true
             }
@@ -86,7 +88,11 @@ exports.createMainWindow = () => {
         },
         {
             label: '打开主窗口',
-            click: function () {}
+            click: function () {
+                win.show()
+                app.show()
+                app.focus()
+            }
         },
         {
             label: '打开调试工具',
@@ -103,7 +109,7 @@ exports.createMainWindow = () => {
         }
     ];
     //系统托盘图标目录
-    let trayIcon = path.join(app.getAppPath(), 'src', 'resources', 'images', 'ico_wechat.png');
+    let trayIcon = path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-tiny.png');
     appTray = new Tray(trayIcon);
     appTray.setImage(trayIcon)
     //图标的上下文菜单

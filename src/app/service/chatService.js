@@ -84,11 +84,17 @@ function onMessage(str,wsConnection){
 
             //console.log(data)
             //console.log(clientName)
-            if (data['from_client_name'] != clientName) {
+            if (data['from_client_name'] != clientName && !mainService.getWin().isFocused()) {
                 mainService.notifier.notify({
                     title: data['from_client_name'],
-                    message: data['content']
+                    message: data['content'],
+                    icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"), // Absolute path (doesn't work on balloons)
+                    sound: true,
                 });
+                mainService.notifier.on('click', ()=>{
+                    mainService.getWin().show()
+
+                })
             }
 
             break;
