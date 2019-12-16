@@ -88,6 +88,12 @@ exports.createMainWindow = () => {
             click: function () {}
         },
         {
+            label: '打开调试工具',
+            click: function () {
+                win.openDevTools()
+            }
+        },
+        {
             label: '退出',
             click: function () {
                 //ipc.send('close-main-window');

@@ -89,6 +89,13 @@ function changeTarget(target, cid) {
     target.setAttribute("class", "chat_list active_chat")
 
     /**
+     * 修改聊天内容窗口，清空已有内容
+     */
+    var msgHistory = document.querySelector('#msg_history')
+    if (msgHistory != null) msgHistory.innerHTML = ''
+
+
+    /**
      * 通知后台服务更新目标
      */
     ipcRenderer.send('msg-targetClient', cid)
