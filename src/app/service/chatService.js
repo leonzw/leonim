@@ -72,8 +72,8 @@ function onMessage(str,wsConnection){
             }
 
 
-            console.log("I am " + clientId)
-            console.log(clientList)
+            //console.log("I am " + clientId)
+            //console.log(clientList)
             mainService.getWin().webContents.send('msg-contactList', clientList)
             break;
         // 发言
@@ -81,17 +81,23 @@ function onMessage(str,wsConnection){
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
             mainService.getWin().webContents.send('msg-receive', str)
             //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
-            mainService.notifier.notify({
-                title: data['from_client_name'],
-                message: data['content']
-            });
+
+            //console.log(data)
+            //console.log(clientName)
+            if (data['from_client_name'] != clientName) {
+                mainService.notifier.notify({
+                    title: data['from_client_name'],
+                    message: data['content']
+                });
+            }
+
             break;
         // 用户退出 更新用户列表
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
             delete clientList[data['from_client_id']];
-            console.log("I am " + clientId)
-            console.log(clientList)
+            //console.log("I am " + clientId)
+            //console.log(clientList)
             mainService.getWin().webContents.send('msg-contactList', clientList)
     }
 }
@@ -104,8 +110,8 @@ function onMessage(str,wsConnection){
 function sendMsg(event,msg){
     console.log("发送" + msg)
 
-    var to_client_id = clientTarget
-    var to_client_name = clientList[clientTarget]
+    var to_client_id = getClientIdByClientName(clientTarget)
+    var to_client_name = msg
     wsConnection.send(
         '{"type":"say","to_client_id":"'+to_client_id
         +'","to_client_name":"'+to_client_name
@@ -125,6 +131,13 @@ function changeTarget(event,msg){
     clientTarget = msg
 }
 
+function getClientIdByClientName(name){
+    for (ci in clientList){
+        if (clientList[ci] == name){
+            return ci
+        }
+    }
+}
 
 module.exports.connect = connect()
 module.exports.getWsConnection = () =>{

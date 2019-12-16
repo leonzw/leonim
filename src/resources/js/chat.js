@@ -10,7 +10,7 @@ ipcRenderer.on('msg-contactList',flushContactList)
 function onMessage(event,message){
     var data = JSON.parse(message);
 
-    console.log(data)
+    //console.log(data)
 
     let from_client_id = data['from_client_id']
     let from_client_name = data['from_client_name']
@@ -57,7 +57,7 @@ function flushContactList(event, message){
     $('#contactList').empty()
     for (contactId in contactList){
         if (contactId != chatService.getChatClientInfo().clientId){
-            $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,\''+contactId.trim()+'\')">\n' +
+            $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,\''+contactList[contactId].trim()+'\')">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
@@ -70,12 +70,11 @@ function flushContactList(event, message){
     }
 }
 
-function changeTarget(target, cid) {
+function changeTarget(target, cname) {
     /**
      * 修改聊天标题
      */
-    var clientList = chatService.getChatClientInfo().clientList
-    document.getElementById('targetContactTitle').innerText = "与 "+ clientList[cid]+" 聊天中"
+    document.getElementById('targetContactTitle').innerText = "与 "+ cname+" 聊天中"
 
     /**
      * 找到已有的高亮，去掉高亮
@@ -98,7 +97,7 @@ function changeTarget(target, cid) {
     /**
      * 通知后台服务更新目标
      */
-    ipcRenderer.send('msg-targetClient', cid)
+    ipcRenderer.send('msg-targetClient', cname)
 }
 
 
