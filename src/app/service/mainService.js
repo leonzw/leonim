@@ -1,5 +1,6 @@
 const { app,BrowserWindow } = require('electron')
 const electron = require('electron');
+const notifier = require('node-notifier');
 const path = require('path');
 const config = require(path.join(app.getAppPath(), "src","config.json"))
 const {spawn} = require('child_process');
@@ -153,3 +154,4 @@ module.exports.getWin = () => {
 module.exports.getUser = () => {
     return user
 }
+module.exports.notifier = notifier

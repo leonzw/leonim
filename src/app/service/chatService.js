@@ -5,6 +5,8 @@ let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", 
 var ws = require("nodejs-websocket")
 var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
 
+
+
 module.exports.wsConnection
 
 /**
@@ -60,7 +62,7 @@ function onMessage(str,wsConnection){
                 clientList[data['client_id']] = data['client_name'];
             }
             //flush_client_list();
-            
+
             if (data['client_name'] == mainService.getUser()){
                 /**
                  * 当前登录用户，设置一下client_id
@@ -68,7 +70,7 @@ function onMessage(str,wsConnection){
                 clientId = data['client_id']
                 clientName = data['client_name']
             }
-            
+
 
             console.log("I am " + clientId)
             console.log(clientList)
@@ -79,6 +81,10 @@ function onMessage(str,wsConnection){
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
             mainService.getWin().webContents.send('msg-receive', str)
             //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
+            mainService.notifier.notify({
+                title: data['from_client_name'],
+                message: data['content']
+            });
             break;
         // 用户退出 更新用户列表
         case 'logout':
@@ -127,3 +133,5 @@ module.exports.getWsConnection = () =>{
 module.exports.getChatClientInfo = () => {
     return {"clientList":clientList, "clientId":clientId, "clientName":clientName, "clientTarget": clientTarget}
 }
+
+
