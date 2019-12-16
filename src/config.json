@@ -1,7 +1,7 @@
 {
-  "debug"   : true,
-  "mockup"  : true,
-  "openDebugTool" : true,
+  "debug"   : false,
+  "mockup"  : false,
+  "openDebugTool" : false,
   "ws" : {
     "server" : "47.104.56.147",
     "port"   : 33133
