@@ -15,10 +15,12 @@ const Tray = electron.Tray;
  * 保持对window对象的全局引用，如果不这么做的话，当JavaScript对象被
  * 垃圾回收的时候，window对象将会自动的关闭
  */
-let win = null;
-let appTray = null;
+let win = null;             // 聊天窗口
+let appTray = null;         // 系统栏
 let user = null;
-let newMsgCount = 0;
+let newMsgCount = 0;        // 是否有新消息
+let chatHistory = {}        // 聊天记录
+
 
 exports.openChatWindow = (username,password) =>{
     /**
@@ -170,5 +172,6 @@ module.exports.vars = {
     win: win,
     appTray: appTray,
     user: user,
-    newMsgCount: newMsgCount
+    newMsgCount: newMsgCount,
+    chatHistory: chatHistory
 }

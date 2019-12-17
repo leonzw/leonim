@@ -64,7 +64,7 @@ function onMessage(str,wsConnection){
             }
             //flush_client_list();
 
-            if (data['client_name'] == mainService.getUser()){
+            if (data['client_name'] === mainService.getUser()){
                 /**
                  * 当前登录用户，设置一下client_id
                  */
@@ -80,12 +80,42 @@ function onMessage(str,wsConnection){
         // 发言
         case 'say':
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
+            if (data['from_client_name'] !== clientName) {
+                data['msgToMe'] = true
+            }else {
+                data['msgToMe'] = false
+            }
+            /**
+             * 通知渲染更新
+             */
             mainService.getWin().webContents.send('msg-receive', str)
             //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
 
-            //console.log(data)
-            //console.log(clientName)
-            if (data['from_client_name'] != clientName && !mainService.getWin().isFocused()) {
+            /**
+             * 存聊天记录
+             */
+            if (data['msgToMe']){
+                // 别人给我说话
+                if (!mainService.vars.chatHistory[data['from_client_name']]) {
+                    mainService.vars.chatHistory[data['from_client_name']] = []
+                }
+                mainService.vars.chatHistory[data['from_client_name']].push(data)
+            } else{
+                // 我发给别人的
+
+                var toClientName = clientList[data['to_client_id']]
+                console.log(toClientName)
+                if (!mainService.vars.chatHistory[toClientName]) {
+                    mainService.vars.chatHistory[toClientName] = []
+                }
+                mainService.vars.chatHistory[toClientName].push(data)
+            }
+
+
+            /**
+             * 未读消息记录
+             */
+            if (data['from_client_name'] !== clientName && !mainService.getWin().isFocused()) {
                 let notification = new Notification({
                     title: data['from_client_name'],
                     "body": "新消息",
@@ -111,7 +141,7 @@ function onMessage(str,wsConnection){
                 // })
 
             }
-
+            //console.log(mainService.vars.chatHistory)
             break;
         // 用户退出 更新用户列表
         case 'logout':
@@ -154,11 +184,12 @@ function changeTarget(event,msg){
 
 function getClientIdByClientName(name){
     for (ci in clientList){
-        if (clientList[ci] == name){
+        if (clientList[ci] === name){
             return ci
         }
     }
 }
+
 
 module.exports.connect = connect()
 module.exports.getWsConnection = () =>{
