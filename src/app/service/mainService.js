@@ -1,6 +1,5 @@
 const { app,BrowserWindow } = require('electron')
 const electron = require('electron');
-const notifier = require('node-notifier');
 const path = require('path');
 const config = require(path.join(app.getAppPath(), "src","config.json"))
 const {spawn} = require('child_process');
@@ -19,6 +18,7 @@ const Tray = electron.Tray;
 let win = null;
 let appTray = null;
 let user = null;
+let newMsgCount = 0;
 
 exports.openChatWindow = (username,password) =>{
     /**
@@ -101,6 +101,11 @@ exports.createMainWindow = () => {
             }
         },
         {
+            label: '显示消息详情',
+            type: 'radio',
+            checked: true
+        },
+        {
             label: '退出',
             click: function () {
                 //ipc.send('close-main-window');
@@ -160,4 +165,10 @@ module.exports.getWin = () => {
 module.exports.getUser = () => {
     return user
 }
-module.exports.notifier = notifier
+
+module.exports.vars = {
+    win: win,
+    appTray: appTray,
+    user: user,
+    newMsgCount: newMsgCount
+}

@@ -12,9 +12,9 @@ app.on('ready', mainService.createMainWindow)
 app.on('window-all-closed', () => {
   // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，
   // 否则绝大部分应用及其菜单栏会保持激活。如果需要保持mac上关闭按钮不退出，打开下面的代码
-  //if (process.platform !== 'darwin') {
+  if (process.platform !== 'darwin') {
     app.quit()
-  //}
+  }
 })
 
 app.on('activate', () => {
@@ -22,7 +22,8 @@ app.on('activate', () => {
    * 在macOS上，当单击dock图标并且没有其他窗口打开时，
    * 通常在应用程序中重新创建一个窗口。
    */
-
+    mainService.vars.newMsgCount = 0;   // 新消息改成0
+    app.setBadgeCount(0)
   if (mainService.getWin() === null) {
     mainService.createMainWindow()
   }

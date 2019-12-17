@@ -1,4 +1,4 @@
-const { app, ipcMain } = require('electron')
+const { app, ipcMain, Notification } = require('electron')
 const path = require('path');
 const config = require(path.join(app.getAppPath(), "src","config.json"))
 let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
@@ -8,6 +8,7 @@ var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
 
 
 module.exports.wsConnection
+
 
 /**
  * 用户列表
@@ -85,16 +86,30 @@ function onMessage(str,wsConnection){
             //console.log(data)
             //console.log(clientName)
             if (data['from_client_name'] != clientName && !mainService.getWin().isFocused()) {
-                mainService.notifier.notify({
+                let notification = new Notification({
                     title: data['from_client_name'],
-                    message: data['content'],
-                    icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"), // Absolute path (doesn't work on balloons)
-                    sound: true,
-                });
-                mainService.notifier.on('click', ()=>{
-                    mainService.getWin().show()
-
+                    "body": "新消息",
+                    icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
                 })
+                notification.show()
+                mainService.vars.newMsgCount++
+                app.setBadgeCount(mainService.vars.newMsgCount)
+                notification.on('click', ()=>{
+                    mainService.getWin().show()
+                    mainService.vars.newMsgCount = 0
+                    app.setBadgeCount(0)
+                })
+                // mainService.notifier.notify({
+                //     title: data['from_client_name'],
+                //     message: data['content'],
+                //     icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"), // Absolute path (doesn't work on balloons)
+                //     sound: true,
+                // });
+                // mainService.notifier.on('click', ()=>{
+                //     mainService.getWin().show()
+                //
+                // })
+
             }
 
             break;
