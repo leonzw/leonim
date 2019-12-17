@@ -17,6 +17,7 @@ let clientList, clientId, clientName, clientTarget
 
 ipcMain.on('msg-send',sendMsg)
 ipcMain.on('msg-targetClient', changeTarget)
+ipcMain.on('msg-history-list', getChatHistory)
 
 function connect(){
     this.wsConnection = ws.connect(wsUrl, ()=>{
@@ -149,7 +150,7 @@ function onMessage(str,wsConnection){
             delete clientList[data['from_client_id']];
             //console.log("I am " + clientId)
             //console.log(clientList)
-            mainService.getWin().webContents.send('msg-contactList', clientList)
+            mainService.getWin().webContents.send('msg-history-list', clientList)
     }
 }
 
@@ -182,6 +183,13 @@ function changeTarget(event,msg){
     clientTarget = msg
 }
 
+function getChatHistory(event,name){
+    var clientChatHistory = mainService.vars.chatHistory[name]
+    event.reply('msg-history-list-reply', clientChatHistory)
+
+}
+
+
 function getClientIdByClientName(name){
     for (ci in clientList){
         if (clientList[ci] === name){
@@ -196,7 +204,12 @@ module.exports.getWsConnection = () =>{
     return this.wsConnection
 }
 module.exports.getChatClientInfo = () => {
-    return {"clientList":clientList, "clientId":clientId, "clientName":clientName, "clientTarget": clientTarget}
+    return {"clientList":clientList,
+        "clientId":clientId,
+        "clientName":clientName,
+        "clientTarget": clientTarget
+    }
 }
+
 
 

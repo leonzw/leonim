@@ -5,13 +5,24 @@ const { ipcRenderer } = require('electron')
 
 ipcRenderer.on('msg-receive',onMessage)
 ipcRenderer.on('msg-contactList',flushContactList)
+ipcRenderer.on('msg-history-list-reply', flushHistory)
 
 // 发言
 function onMessage(event,message){
     var data = JSON.parse(message);
 
     //console.log(data)
+    renderMessage(data)
+    scrollChatHisotryToBottom()
+}
 
+function scrollChatHisotryToBottom() {
+    var msg_history = $("#msg_history")
+    var top_height = msg_history.prop("scrollHeight") - msg_history.height()
+    msg_history.animate({ scrollTop: top_height }, 500);
+}
+
+function renderMessage(data){
     let from_client_id = data['from_client_id']
     let from_client_name = data['from_client_name']
     let content = data['content']
@@ -40,9 +51,6 @@ function onMessage(event,message){
             '');
     }
 
-    var msg_history = $("#msg_history")
-    var top_height = msg_history.prop("scrollHeight") - msg_history.height()
-    msg_history.animate({ scrollTop: top_height }, 500);
 
 }
 
@@ -70,6 +78,13 @@ function flushContactList(event, message){
     }
 }
 
+function flushHistory(event,message){
+    message.forEach((row) => {
+        renderMessage(row)
+    })
+    scrollChatHisotryToBottom()
+}
+
 function changeTarget(target, cname) {
     /**
      * 修改聊天标题
@@ -93,6 +108,8 @@ function changeTarget(target, cname) {
     var msgHistory = document.querySelector('#msg_history')
     if (msgHistory != null) msgHistory.innerHTML = ''
 
+
+    ipcRenderer.send('msg-history-list', cname)
 
     /**
      * 通知后台服务更新目标
