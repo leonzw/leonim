@@ -23,7 +23,7 @@ app.on('activate', () => {
    * 通常在应用程序中重新创建一个窗口。
    */
     mainService.vars.newMsgCount = 0;   // 新消息改成0
-    app.setBadgeCount(0)
+    app.badgeCount = 0
   if (mainService.getWin() === null) {
     mainService.createMainWindow()
   }

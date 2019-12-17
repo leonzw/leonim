@@ -93,11 +93,11 @@ function onMessage(str,wsConnection){
                 })
                 notification.show()
                 mainService.vars.newMsgCount++
-                app.setBadgeCount(mainService.vars.newMsgCount)
+                app.badgeCount = mainService.vars.newMsgCount
                 notification.on('click', ()=>{
                     mainService.getWin().show()
                     mainService.vars.newMsgCount = 0
-                    app.setBadgeCount(0)
+                    app.badgeCount = 0
                 })
                 // mainService.notifier.notify({
                 //     title: data['from_client_name'],
