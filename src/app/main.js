@@ -1,4 +1,4 @@
-const { app,BrowserWindow } = require('electron')
+const { app,ipcMain } = require('electron')
 const path = require('path');
 let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
 
@@ -23,6 +23,8 @@ app.on('window-all-closed', () => {
   // 否则绝大部分应用及其菜单栏会保持激活。如果需要保持mac上关闭按钮不退出，打开下面的代码
   if (process.platform !== 'darwin') {
     app.quit()
+  }else{
+
   }
 })
 
@@ -40,6 +42,17 @@ app.on('activate', () => {
     mainService.getWin().setSize(1280,800)
     // 然后加载应用的 index.html。
     mainService.getWin().loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
+    mainService.getWin().on('ready-to-show',()=>{
+      //mainService.getWin().openDevTools()
+      mainService.getWin().show()
+      var restoreInfoObj = {
+        currentContact : mainService.vars.currentContact,
+        contactList : mainService.vars.contactList,
+        chatHistory: mainService.vars.chatHistory
+      }
+      mainService.getWin().webContents.send('restore-currentContact', restoreInfoObj)
+    })
+
   }else {
       mainService.getWin().restore()
   }

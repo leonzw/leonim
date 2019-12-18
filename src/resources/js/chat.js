@@ -6,6 +6,16 @@ const { ipcRenderer } = require('electron')
 ipcRenderer.on('msg-receive',onMessage)
 ipcRenderer.on('msg-contactList',flushContactList)
 ipcRenderer.on('msg-history-list-reply', flushHistory)
+ipcRenderer.on('restore-currentContact', (event,msg)=>{
+    flushContactList(event, msg.contactList)
+    selectTarget(msg.currentContact)
+})
+
+
+function selectTarget(name){
+    var target = document.querySelector('#chat_list_'+name)
+    changeTarget(target,name)
+}
 
 // 发言
 function onMessage(event,message){
@@ -65,7 +75,7 @@ function flushContactList(event, message){
     $('#contactList').empty()
     for (contactId in contactList){
         if (contactId != chatService.getChatClientInfo().clientId){
-            $('#contactList').append('<div class="chat_list" onclick="changeTarget(this,\''+contactList[contactId].trim()+'\')">\n' +
+            $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactList[contactId].trim() +'" onclick="changeTarget(this,\''+contactList[contactId].trim()+'\')">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
@@ -79,10 +89,12 @@ function flushContactList(event, message){
 }
 
 function flushHistory(event,message){
-    message.forEach((row) => {
-        renderMessage(row)
-    })
-    scrollChatHisotryToBottom()
+    if (message != null && message.length > 0) {
+        message.forEach((row) => {
+            renderMessage(row)
+        })
+        scrollChatHisotryToBottom()
+    }
 }
 
 function changeTarget(target, cname) {

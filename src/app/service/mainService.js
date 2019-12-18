@@ -20,7 +20,8 @@ let appTray = null;         // 系统栏
 let user = null;
 let newMsgCount = 0;        // 是否有新消息
 let chatHistory = {}        // 聊天记录
-
+let currentContact = null;  // 当前聊天用户
+let contactList = null;     // 联系人列表
 
 exports.openChatWindow = (username,password) =>{
     /**
@@ -47,7 +48,11 @@ exports.setTrayIcon = () => {
         {
             label: '打开主窗口',
             click: function () {
-                win.show()
+                if (win!= null && !win.isDestroyed) {
+                    //最小化了，拉出来
+                    win.show()
+                }
+
                 app.show()
                 app.focus()
             }
@@ -182,5 +187,8 @@ module.exports.vars = {
     appTray: appTray,
     user: user,
     newMsgCount: newMsgCount,
-    chatHistory: chatHistory
+    chatHistory: chatHistory,
+    currentContact: currentContact,
+    contactList: contactList,
+    config:config
 }

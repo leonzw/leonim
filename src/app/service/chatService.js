@@ -76,6 +76,7 @@ function onMessage(str,wsConnection){
 
             //console.log("I am " + clientId)
             //console.log(clientList)
+            mainService.vars.contactList = clientList       // 升级联系人列表
             mainService.getWin().webContents.send('msg-contactList', clientList)
             break;
         // 发言
@@ -86,10 +87,18 @@ function onMessage(str,wsConnection){
             }else {
                 data['msgToMe'] = false
             }
+
+
             /**
              * 通知渲染更新
              */
-            mainService.getWin().webContents.send('msg-receive', str)
+
+            if (typeof mainService.getWin() === 'undefined' || mainService.getWin() === null || mainService.getWin().isDestroyed()) {
+                // Don't do anything
+            }else{
+                mainService.getWin().webContents.send('msg-receive', str)
+            }
+
             //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
 
             /**
@@ -116,20 +125,27 @@ function onMessage(str,wsConnection){
             /**
              * 未读消息记录
              */
-            if (data['from_client_name'] !== clientName && !mainService.getWin().isFocused()) {
+            if (data['from_client_name'] !== clientName) {
                 let notification = new Notification({
                     title: data['from_client_name'],
                     "body": "新消息",
                     icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
                 })
-                notification.show()
-                mainService.vars.newMsgCount++
-                app.badgeCount = mainService.vars.newMsgCount
-                notification.on('click', ()=>{
-                    mainService.getWin().show()
-                    mainService.vars.newMsgCount = 0
-                    app.badgeCount = 0
-                })
+
+                if (mainService.getWin().isDestroyed || !mainService.getWin().isFocused()) {
+                    notification.show()
+                    mainService.vars.newMsgCount++
+                    app.badgeCount = mainService.vars.newMsgCount
+
+                    notification.on('click', ()=>{
+                        mainService.getWin().show()
+                        mainService.vars.newMsgCount = 0
+                        app.badgeCount = 0
+                    })
+                }
+
+
+
                 // mainService.notifier.notify({
                 //     title: data['from_client_name'],
                 //     message: data['content'],
@@ -181,6 +197,7 @@ function sendMsg(event,msg){
  */
 function changeTarget(event,msg){
     clientTarget = msg
+    mainService.vars.currentContact = msg
 }
 
 function getChatHistory(event,name){
@@ -204,7 +221,8 @@ module.exports.getWsConnection = () =>{
     return this.wsConnection
 }
 module.exports.getChatClientInfo = () => {
-    return {"clientList":clientList,
+    return {
+        "clientList":clientList,
         "clientId":clientId,
         "clientName":clientName,
         "clientTarget": clientTarget
