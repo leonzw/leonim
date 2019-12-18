@@ -18,11 +18,6 @@ const Tray = electron.Tray;
 let win = null;             // 聊天窗口
 let appTray = null;         // 系统栏
 let user = null;
-let newMsgCount = 0;        // 是否有新消息
-let chatHistory = {}        // 聊天记录
-let currentContact = null;  // 当前聊天用户
-let contactList = null;     // 联系人列表
-let clientId = null;
 
 exports.openChatWindow = (username,password) =>{
     /**

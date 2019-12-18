@@ -28,12 +28,16 @@ app.on('window-all-closed', () => {
   }
 })
 
+app.on('focus',()=>{
+  mainService.getWin().badgeCount = 0
+})
+
 app.on('activate', () => {
   /**
    * 在macOS上，当单击dock图标并且没有其他窗口打开时，
    * 通常在应用程序中重新创建一个窗口。
    */
-    mainService.vars.newMsgCount = 0;   // 新消息改成0
+    mainService.vars.chatService.newMsgCount = 0;   // 新消息改成0
     app.badgeCount = 0
   //console.log(mainService.getWin())
   if (mainService.getWin() === null || mainService.getWin().isDestroyed) {
@@ -46,9 +50,9 @@ app.on('activate', () => {
       //mainService.getWin().openDevTools()
       mainService.getWin().show()
       var restoreInfoObj = {
-        currentContact : mainService.vars.currentContact,
-        contactList : mainService.vars.contactList,
-        chatHistory: mainService.vars.chatHistory
+        currentContact : mainService.vars.chatService.currentContactName,
+        contactList : mainService.vars.chatService.contactList,
+        chatHistory: mainService.vars.chatService.chatHistory
       }
       mainService.getWin().webContents.send('restore-currentContact', restoreInfoObj)
     })

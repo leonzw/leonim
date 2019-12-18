@@ -7,6 +7,7 @@ ipcRenderer.on('msg-receive',onMessage)
 ipcRenderer.on('msg-contactList',flushContactList)
 ipcRenderer.on('msg-history-list-reply', flushHistory)
 ipcRenderer.on('restore-currentContact', (event,msg)=>{
+    console.log(msg)
     flushContactList(event, msg.contactList)
     selectTarget(msg.currentContact)
 })
@@ -98,6 +99,7 @@ function flushHistory(event,message){
 }
 
 function changeTarget(target, cname) {
+    if (!target || !cname) return false;
     /**
      * 修改聊天标题
      */

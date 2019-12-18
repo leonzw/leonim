@@ -77,8 +77,6 @@ function onMessage(str,wsConnection){
         // 发言
         case 'say':
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
-            console.log(mainService.getUser())
-            console.log(data['from_client_name'])
             if (data['from_client_name'] === mainService.getUser()) {
                 data['msgToMe'] = false
             }else {
@@ -90,7 +88,6 @@ function onMessage(str,wsConnection){
              * 通知渲染更新
              */
 
-            console.log(mainService.getUser())
             if (typeof mainService.getWin() === 'undefined' ||
                 mainService.getWin() === null ||
                 mainService.getWin().isDestroyed()) {
@@ -116,13 +113,12 @@ function onMessage(str,wsConnection){
                 // 我发给别人的
 
                 let toClientName = mainService.vars.chatService.contactList[data['to_client_id']]
-                //console.log(toClientName)
+                console.log(toClientName)
                 if (!mainService.vars.chatService.chatHistory[toClientName]) {
                     mainService.vars.chatService.chatHistory[toClientName] = []
                 }
                 mainService.vars.chatService.chatHistory[toClientName].push(data)
             }
-            console.log(mainService.vars.chatService.chatHistory)
 
             /**
              * 未读消息记录
@@ -136,7 +132,7 @@ function onMessage(str,wsConnection){
 
                 if (mainService.getWin().isDestroyed || !mainService.getWin().isFocused()) {
                     notification.show()
-                    mainService.vars.newMsgCount++
+                    mainService.vars.chatService.newMsgCount++
                     app.badgeCount = mainService.vars.chatService.newMsgCount
 
                     notification.on('click', ()=>{
@@ -178,7 +174,7 @@ function onMessage(str,wsConnection){
 function sendMsg(event,msg){
     console.log("发送" + msg)
 
-    var to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactId)
+    var to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
     wsConnection.send(
         '{"type":"say","to_client_id":"'+to_client_id
         +'","to_client_name":"'+msg
@@ -196,6 +192,7 @@ function sendMsg(event,msg){
  */
 function changeTarget(event,msg){
     mainService.vars.chatService.currentContactName = msg
+    mainService.vars.chatService.currentContactId = getClientIdByClientName(msg)
 }
 
 function getChatHistory(event,name){
