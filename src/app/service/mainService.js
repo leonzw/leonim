@@ -22,6 +22,7 @@ let newMsgCount = 0;        // 是否有新消息
 let chatHistory = {}        // 聊天记录
 let currentContact = null;  // 当前聊天用户
 let contactList = null;     // 联系人列表
+let clientId = null;
 
 exports.openChatWindow = (username,password) =>{
     /**
@@ -185,10 +186,12 @@ module.exports.getUser = () => {
 module.exports.vars = {
     win: win,
     appTray: appTray,
-    user: user,
-    newMsgCount: newMsgCount,
-    chatHistory: chatHistory,
-    currentContact: currentContact,
-    contactList: contactList,
+    chatService:{
+        newMsgCount: 0,
+        chatHistory: [],
+        currentContactId: null,
+        currentContactName: null,
+        contactList: null,
+        clientId: null},
     config:config
 }

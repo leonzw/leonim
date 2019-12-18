@@ -10,10 +10,10 @@ var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
 module.exports.wsConnection
 
 
+
 /**
  * 用户列表
  */
-let clientList, clientId, clientName, clientTarget
 
 ipcMain.on('msg-send',sendMsg)
 ipcMain.on('msg-targetClient', changeTarget)
@@ -55,13 +55,13 @@ function onMessage(str,wsConnection){
         case 'login':
             //{"type":"login","client_id":xxx,"client_name":"xxx","client_list":"[...]","time":"xxx"}
             //say(data['client_id'], data['client_name'],  data['client_name']+' 加入了聊天室', data['time']);
-            if(!clientList)
+            if(mainService.vars.chatService.contactList === null)
             {
-                clientList = data['client_list'];
+                mainService.vars.chatService.contactList = data['client_list'];
             }
             else
             {
-                clientList[data['client_id']] = data['client_name'];
+                mainService.vars.chatService.contactList[data['client_id']] = data['client_name'];
             }
             //flush_client_list();
 
@@ -69,23 +69,20 @@ function onMessage(str,wsConnection){
                 /**
                  * 当前登录用户，设置一下client_id
                  */
-                clientId = data['client_id']
-                clientName = data['client_name']
+                mainService.vars.chatService.clientId = data['client_id']
             }
 
-
-            //console.log("I am " + clientId)
-            //console.log(clientList)
-            mainService.vars.contactList = clientList       // 升级联系人列表
-            mainService.getWin().webContents.send('msg-contactList', clientList)
+            mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
             break;
         // 发言
         case 'say':
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
-            if (data['from_client_name'] !== clientName) {
-                data['msgToMe'] = true
-            }else {
+            console.log(mainService.getUser())
+            console.log(data['from_client_name'])
+            if (data['from_client_name'] === mainService.getUser()) {
                 data['msgToMe'] = false
+            }else {
+                data['msgToMe'] = true
             }
 
 
@@ -93,11 +90,12 @@ function onMessage(str,wsConnection){
              * 通知渲染更新
              */
 
+            console.log(mainService.getUser())
             if (typeof mainService.getWin() === 'undefined' ||
                 mainService.getWin() === null ||
                 mainService.getWin().isDestroyed()) {
                 // Don't do anything
-            }else if(clientTarget !== data['from_client_name'] && mainService.getUser() !== data['from_client_name']){
+            }else if(mainService.vars.chatService.currentContactName !== data['from_client_name'] && mainService.getUser() !== data['from_client_name']){
                 // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
             }else{
                 mainService.getWin().webContents.send('msg-receive', str)
@@ -110,26 +108,26 @@ function onMessage(str,wsConnection){
              */
             if (data['msgToMe']){
                 // 别人给我说话
-                if (!mainService.vars.chatHistory[data['from_client_name']]) {
-                    mainService.vars.chatHistory[data['from_client_name']] = []
+                if (!mainService.vars.chatService.chatHistory[data['from_client_name']]) {
+                    mainService.vars.chatService.chatHistory[data['from_client_name']] = []
                 }
-                mainService.vars.chatHistory[data['from_client_name']].push(data)
+                mainService.vars.chatService.chatHistory[data['from_client_name']].push(data)
             } else{
                 // 我发给别人的
 
-                var toClientName = clientList[data['to_client_id']]
-                console.log(toClientName)
-                if (!mainService.vars.chatHistory[toClientName]) {
-                    mainService.vars.chatHistory[toClientName] = []
+                let toClientName = mainService.vars.chatService.contactList[data['to_client_id']]
+                //console.log(toClientName)
+                if (!mainService.vars.chatService.chatHistory[toClientName]) {
+                    mainService.vars.chatService.chatHistory[toClientName] = []
                 }
-                mainService.vars.chatHistory[toClientName].push(data)
+                mainService.vars.chatService.chatHistory[toClientName].push(data)
             }
-
+            console.log(mainService.vars.chatService.chatHistory)
 
             /**
              * 未读消息记录
              */
-            if (data['from_client_name'] !== clientName) {
+            if (data['from_client_name'] !== mainService.getUser()) {
                 let notification = new Notification({
                     title: data['from_client_name'],
                     "body": "新消息",
@@ -139,11 +137,11 @@ function onMessage(str,wsConnection){
                 if (mainService.getWin().isDestroyed || !mainService.getWin().isFocused()) {
                     notification.show()
                     mainService.vars.newMsgCount++
-                    app.badgeCount = mainService.vars.newMsgCount
+                    app.badgeCount = mainService.vars.chatService.newMsgCount
 
                     notification.on('click', ()=>{
                         mainService.getWin().show()
-                        mainService.vars.newMsgCount = 0
+                        mainService.vars.chatService.newMsgCount = 0
                         app.badgeCount = 0
                     })
                 }
@@ -167,10 +165,8 @@ function onMessage(str,wsConnection){
         // 用户退出 更新用户列表
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
-            delete clientList[data['from_client_id']];
-            //console.log("I am " + clientId)
-            //console.log(clientList)
-            mainService.getWin().webContents.send('msg-history-list', clientList)
+            delete mainService.vars.chatService.contactList[data['from_client_id']];
+            mainService.getWin().webContents.send('msg-history-list', mainService.vars.chatService.contactList)
     }
 }
 
@@ -182,11 +178,10 @@ function onMessage(str,wsConnection){
 function sendMsg(event,msg){
     console.log("发送" + msg)
 
-    var to_client_id = getClientIdByClientName(clientTarget)
-    var to_client_name = msg
+    var to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactId)
     wsConnection.send(
         '{"type":"say","to_client_id":"'+to_client_id
-        +'","to_client_name":"'+to_client_name
+        +'","to_client_name":"'+msg
         +'","content":"'
         +msg.replace(/"/g, '\\"').replace(/\n/g,'\\n').replace(/\r/g, '\\r')
         +'"}');
@@ -200,20 +195,19 @@ function sendMsg(event,msg){
  * @param msg
  */
 function changeTarget(event,msg){
-    clientTarget = msg
-    mainService.vars.currentContact = msg
+    mainService.vars.chatService.currentContactName = msg
 }
 
 function getChatHistory(event,name){
-    var clientChatHistory = mainService.vars.chatHistory[name]
-    event.reply('msg-history-list-reply', clientChatHistory)
-
+    if (mainService.vars.chatService.chatHistory !== null && mainService.vars.chatService.chatHistory[name] !== null) {
+        event.reply('msg-history-list-reply', mainService.vars.chatService.chatHistory[name])
+    }
 }
 
 
 function getClientIdByClientName(name){
-    for (ci in clientList){
-        if (clientList[ci] === name){
+    for (ci in mainService.vars.chatService.contactList){
+        if (mainService.vars.chatService.contactList[ci] === name){
             return ci
         }
     }
@@ -224,13 +218,8 @@ module.exports.connect = connect()
 module.exports.getWsConnection = () =>{
     return this.wsConnection
 }
-module.exports.getChatClientInfo = () => {
-    return {
-        "clientList":clientList,
-        "clientId":clientId,
-        "clientName":clientName,
-        "clientTarget": clientTarget
-    }
+module.exports.getVars = () => {
+    return mainService.vars.chatService
 }
 
 

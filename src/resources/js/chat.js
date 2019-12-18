@@ -38,7 +38,7 @@ function renderMessage(data){
     let content = data['content']
     let time = data['time']
 
-    if (from_client_id == chatService.getChatClientInfo().clientId){
+    if (from_client_id == chatService.getVars().clientId){
         /**
          * 自己发出的留言，显示在自己这边
          */
@@ -74,7 +74,7 @@ function flushContactList(event, message){
     var contactList = message
     $('#contactList').empty()
     for (contactId in contactList){
-        if (contactId != chatService.getChatClientInfo().clientId){
+        if (contactId != chatService.getVars().clientId){
             $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactList[contactId].trim() +'" onclick="changeTarget(this,\''+contactList[contactId].trim()+'\')">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
