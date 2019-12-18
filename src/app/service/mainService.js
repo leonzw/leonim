@@ -37,51 +37,7 @@ exports.openChatWindow = (username,password) =>{
     win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
 }
 
-
-
-exports.createMainWindow = () => {
-
-
-    if (process.platform == 'darwin') {
-        // Mac系统
-        // 创建浏览器窗口。
-        win = new BrowserWindow({
-            width: 320,
-            height: 240 ,
-            //frame: false,
-            titleBarStyle: 'default',
-            show: false,
-            autoHideMenuBar: false,
-            title: "wechat聊天自制版",
-            skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
-            //backgroundColor: '#2e2c29'
-            resizable:true,
-            icon: path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-sm.png'),
-            webPreferences: {
-                nodeIntegration: true
-            }
-        })
-    }else{
-        // Win or Linux
-        win = new BrowserWindow({
-            width: 320,
-            height: 240 ,
-            //frame: false,
-            titleBarStyle: 'hidden',
-            show: false,
-            autoHideMenuBar: true,
-            title: "wechat聊天自制版",
-            skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
-            //backgroundColor: '#2e2c29'
-            resizable:true,
-            closable: false,
-            icon:path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-sm.png'),
-            webPreferences: {
-                nodeIntegration: true
-            }
-        })
-    }
-
+exports.setTrayIcon = () => {
     //系统托盘右键菜单
     var trayMenuTemplate = [
         {
@@ -127,9 +83,56 @@ exports.createMainWindow = () => {
     appTray.setContextMenu(contextMenu);
 
     win.setIcon(trayIcon)
-    // 然后加载应用的 index.html。
-    win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'index.html'))
+}
 
+exports.createMainWindow = () => {
+
+
+    if (process.platform === 'darwin') {
+        // Mac系统
+        // 创建浏览器窗口。
+        win = new BrowserWindow({
+            width: 320,
+            height: 240 ,
+            //frame: false,
+            titleBarStyle: 'default',
+            show: false,
+            autoHideMenuBar: false,
+            title: "wechat聊天自制版",
+            skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
+            //backgroundColor: '#2e2c29'
+            resizable:true,
+            icon: path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-sm.png'),
+            webPreferences: {
+                nodeIntegration: true,
+                nodeIntegrationInWorker: true
+            },
+            //closable:false,
+            enableRemoteModule: true,
+            scrollBounce: true
+        })
+    }else{
+        // Win or Linux
+        win = new BrowserWindow({
+            width: 320,
+            height: 240 ,
+            //frame: false,
+            titleBarStyle: 'hidden',
+            show: false,
+            autoHideMenuBar: true,
+            title: "wechat聊天自制版",
+            skipTaskbar:false,      // 是否在任务栏中显示窗口. 默认值为false.
+            //backgroundColor: '#2e2c29'
+            resizable:true,
+            closable: false,
+            icon:path.join(app.getAppPath(), 'src', 'resources', 'images', 'chat-sm.png'),
+            webPreferences: {
+                nodeIntegration: true,
+                nodeIntegrationInWorker: true
+            },
+            enableRemoteModule: true,
+        })
+    }
 
     // 打开开发者工具
     if(config.openDebugTool === true){
@@ -152,10 +155,16 @@ exports.createMainWindow = () => {
 
     // 当 window 被关闭，这个事件会被触发。
     win.on('closed', () => {
-        // 取消引用 window 对象，如果你的应用支持多窗口的话，
-        // 通常会把多个 window 对象存放在一个数组里面，
-        // 与此同时，你应该删除相应的元素。
-        win = null
+        /**
+         * 取消引用 window 对象，如果你的应用支持多窗口的话，
+         * 通常会把多个 window 对象存放在一个数组里面，
+         * 与此同时，你应该删除相应的元素。
+         */
+
+        // Linux还有Win下面关闭就退出了
+        if (process.platform !== 'darwin') {
+            win = null
+        }
     })
 
 }

@@ -3,10 +3,19 @@ const path = require('path');
 let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
 
 
+
+
 // Electron 会在初始化后并准备
 // 创建浏览器窗口时，调用这个函数。
 // 部分 API 在 ready 事件触发后才能使用。
-app.on('ready', mainService.createMainWindow)
+app.on('ready', ()=>{
+  mainService.createMainWindow()
+  mainService.setTrayIcon()
+  // 然后加载应用的 index.html。
+  mainService.getWin().loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'index.html'))
+})
+
+
 
 // 当全部窗口关闭时退出。
 app.on('window-all-closed', () => {
@@ -24,8 +33,15 @@ app.on('activate', () => {
    */
     mainService.vars.newMsgCount = 0;   // 新消息改成0
     app.badgeCount = 0
-  if (mainService.getWin() === null) {
+  //console.log(mainService.getWin())
+  if (mainService.getWin() === null || mainService.getWin().isDestroyed) {
+    mainService.win = null
     mainService.createMainWindow()
+    mainService.getWin().setSize(1280,800)
+    // 然后加载应用的 index.html。
+    mainService.getWin().loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
+  }else {
+      mainService.getWin().restore()
   }
 })
 
