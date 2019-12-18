@@ -93,8 +93,12 @@ function onMessage(str,wsConnection){
              * 通知渲染更新
              */
 
-            if (typeof mainService.getWin() === 'undefined' || mainService.getWin() === null || mainService.getWin().isDestroyed()) {
+            if (typeof mainService.getWin() === 'undefined' ||
+                mainService.getWin() === null ||
+                mainService.getWin().isDestroyed()) {
                 // Don't do anything
+            }else if(clientTarget !== data['from_client_name'] && mainService.getUser() !== data['from_client_name']){
+                // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
             }else{
                 mainService.getWin().webContents.send('msg-receive', str)
             }
