@@ -172,6 +172,8 @@ exports.createMainWindow = () => {
         app.badgeCount = 0
     })
 
+    return win
+
 }
 
 

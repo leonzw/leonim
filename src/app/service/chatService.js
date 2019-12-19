@@ -124,39 +124,55 @@ function onMessage(str,wsConnection){
              * 未读消息记录
              */
             if (data['from_client_name'] !== mainService.getUser()) {
+
+                mainService.vars.chatService.newMsgCount++
+                app.badgeCount = mainService.vars.chatService.newMsgCount
+
                 let notification = new Notification({
                     title: data['from_client_name'],
                     "body": "新消息",
                     icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
                 })
 
-                if (mainService.getWin().isDestroyed || !mainService.getWin().isFocused()) {
-                    notification.show()
-                    mainService.vars.chatService.newMsgCount++
-                    app.badgeCount = mainService.vars.chatService.newMsgCount
+                if (mainService.getWin().isDestroyed()){
+                    // 窗口已经销毁，点的是关闭按钮, win == null
+                    notification.on('click', ()=> {
 
+                        mainService.vars.win = null
+                        mainService.vars.win = mainService.createMainWindow()
+                        mainService.vars.win.setSize(1280, 800)
+                        // 然后加载应用的 index.html。
+                        mainService.vars.win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
+                        mainService.vars.win.on('ready-to-show', () => {
+                            //mainService.getWin().openDevTools()
+                            mainService.vars.win.show()
+                            let restoreInfoObj = {
+                                currentContact: mainService.vars.chatService.currentContactName,
+                                contactList: mainService.vars.chatService.contactList,
+                                chatHistory: mainService.vars.chatService.chatHistory
+                            }
+                            mainService.vars.win.webContents.send('restore-currentContact', restoreInfoObj)
+
+
+                            mainService.vars.chatService.newMsgCount = 0
+                            app.badgeCount = 0
+                        })
+                    })
+                }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
+                    // 窗口没销毁，只是不是焦点
                     notification.on('click', ()=>{
                         mainService.getWin().show()
                         mainService.vars.chatService.newMsgCount = 0
                         app.badgeCount = 0
                     })
+                }else{
+                    // 窗口没销毁，只是最小化了。
+                    console.log("未处理")
                 }
 
 
-
-                // mainService.notifier.notify({
-                //     title: data['from_client_name'],
-                //     message: data['content'],
-                //     icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"), // Absolute path (doesn't work on balloons)
-                //     sound: true,
-                // });
-                // mainService.notifier.on('click', ()=>{
-                //     mainService.getWin().show()
-                //
-                // })
-
+                notification.show()
             }
-            //console.log(mainService.vars.chatHistory)
             break;
         // 用户退出 更新用户列表
         case 'logout':
