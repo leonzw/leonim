@@ -15,10 +15,20 @@
   </head>
   <body>
   <div class="container-sm">
-    <div class="row"><div class="col-sm-3">用户名</div><div class="col-sm-9"><input name="username" id="username"></div> </div>
+    <div class="row"><div class="col-sm-3">用户名</div><div class="col-sm-9"><input name="username" id="username" autofocus="autofocus"></div> </div>
     <div class="row"><div class="col-sm-3">密码</div><div class="col-sm-9"><input name="password" id="password"></div> </div>
     <div class="row"><div class="col-auto"> <button onclick="openChat()">登录</button></div></div>
   </div>
+  <script type="text/javascript">
 
+    let msgInput = document.querySelector('#username')
+    msgInput.addEventListener('keydown',event=>{
+      if (event.keyCode === 13 && !event.ctrlKey) {
+        openChat()
+        return false
+      }
+    })
+
+  </script>
   </body>
 </html>

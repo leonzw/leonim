@@ -31,6 +31,7 @@ exports.openChatWindow = (username,password) =>{
      */
     //console.log(win)
     win.setSize(1280,740)
+    win.center()
     win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
 }
 
