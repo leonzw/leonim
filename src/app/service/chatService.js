@@ -8,9 +8,22 @@ var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
 
 
 module.exports.wsConnection
+mainService.vars.chatService.reCreateChatWindow = reCreateChatWindow
 
-
-
+app.on('activate', () => {
+    /**
+     * 在macOS上，当单击dock图标并且没有其他窗口打开时，
+     * 通常在应用程序中重新创建一个窗口。
+     */
+    mainService.vars.chatService.newMsgCount = 0;   // 新消息改成0
+    app.badgeCount = 0
+    //console.log(mainService.getWin())
+    if (mainService.getWin() === null || mainService.getWin().isDestroyed()) {
+        mainService.vars.chatService.reCreateChatWindow()
+    }else {
+        mainService.getWin().restore()
+    }
+})
 /**
  * 用户列表
  */
@@ -18,6 +31,9 @@ module.exports.wsConnection
 ipcMain.on('msg-send',sendMsg)
 ipcMain.on('msg-targetClient', changeTarget)
 ipcMain.on('msg-history-list', getChatHistory)
+
+
+
 
 function connect(){
     this.wsConnection = ws.connect(wsUrl, ()=>{
@@ -77,102 +93,7 @@ function onMessage(str,wsConnection){
         // 发言
         case 'say':
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
-            if (data['from_client_name'] === mainService.getUser()) {
-                data['msgToMe'] = false
-            }else {
-                data['msgToMe'] = true
-            }
-
-
-            /**
-             * 通知渲染更新
-             */
-
-            if (typeof mainService.getWin() === 'undefined' ||
-                mainService.getWin() === null ||
-                mainService.getWin().isDestroyed()) {
-                // Don't do anything
-            }else if(mainService.vars.chatService.currentContactName !== data['from_client_name'] && mainService.getUser() !== data['from_client_name']){
-                // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
-            }else{
-                mainService.getWin().webContents.send('msg-receive', str)
-            }
-
-            //mainService.win.BrowserWindow.webContents.send('msg-receive', str)
-
-            /**
-             * 存聊天记录
-             */
-            if (data['msgToMe']){
-                // 别人给我说话
-                if (!mainService.vars.chatService.chatHistory[data['from_client_name']]) {
-                    mainService.vars.chatService.chatHistory[data['from_client_name']] = []
-                }
-                mainService.vars.chatService.chatHistory[data['from_client_name']].push(data)
-            } else{
-                // 我发给别人的
-
-                let toClientName = mainService.vars.chatService.contactList[data['to_client_id']]
-                console.log(toClientName)
-                if (!mainService.vars.chatService.chatHistory[toClientName]) {
-                    mainService.vars.chatService.chatHistory[toClientName] = []
-                }
-                mainService.vars.chatService.chatHistory[toClientName].push(data)
-            }
-
-            /**
-             * 未读消息记录
-             */
-            if (data['from_client_name'] !== mainService.getUser()) {
-
-                mainService.vars.chatService.newMsgCount++
-                app.badgeCount = mainService.vars.chatService.newMsgCount
-
-                let notification = new Notification({
-                    title: data['from_client_name'],
-                    "body": "新消息",
-                    icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
-                })
-
-                if (mainService.getWin().isDestroyed()){
-                    // 窗口已经销毁，点的是关闭按钮, win == null
-                    notification.on('click', ()=> {
-
-                        mainService.vars.win = null
-                        mainService.vars.win = mainService.createMainWindow()
-                        mainService.vars.win.setSize(1280, 800)
-                        // 然后加载应用的 index.html。
-                        mainService.vars.win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
-                        mainService.vars.win.on('ready-to-show', () => {
-                            //mainService.getWin().openDevTools()
-                            mainService.vars.win.show()
-                            let restoreInfoObj = {
-                                currentContact: mainService.vars.chatService.currentContactName,
-                                contactList: mainService.vars.chatService.contactList,
-                                chatHistory: mainService.vars.chatService.chatHistory
-                            }
-                            mainService.vars.win.webContents.send('restore-currentContact', restoreInfoObj)
-
-
-                            mainService.vars.chatService.newMsgCount = 0
-                            app.badgeCount = 0
-                        })
-                    })
-                }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
-                    // 窗口没销毁，只是不是焦点
-                    notification.on('click', ()=>{
-                        mainService.getWin().show()
-                        mainService.vars.chatService.newMsgCount = 0
-                        app.badgeCount = 0
-                    })
-                }else{
-                    // 窗口没销毁，只是最小化了。
-                    console.log("未处理")
-                }
-
-
-                notification.show()
-            }
+            sayAction(str)
             break;
         // 用户退出 更新用户列表
         case 'logout':
@@ -227,6 +148,104 @@ function getClientIdByClientName(name){
 }
 
 
+
+
+function sayAction(str){
+    var data = JSON.parse(str);
+    if (data['from_client_name'] === mainService.getUser()) {
+        data['msgToMe'] = false
+    }else {
+        data['msgToMe'] = true
+    }
+
+
+    /**
+     * 通知渲染更新
+     */
+
+    if (typeof mainService.getWin() === 'undefined' ||
+        mainService.getWin() === null ||
+        mainService.getWin().isDestroyed()) {
+        // Don't do anything
+    }else if(mainService.vars.chatService.currentContactName !== data['from_client_name'] && mainService.getUser() !== data['from_client_name']){
+        // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
+    }else{
+        mainService.getWin().webContents.send('msg-receive', str)
+    }
+
+    /**
+     * 存聊天记录
+     */
+    if (data['msgToMe']){
+        // 别人给我说话
+        if (!mainService.vars.chatService.chatHistory[data['from_client_name']]) {
+            mainService.vars.chatService.chatHistory[data['from_client_name']] = []
+        }
+        mainService.vars.chatService.chatHistory[data['from_client_name']].push(data)
+    } else{
+        // 我发给别人的
+
+        let toClientName = mainService.vars.chatService.contactList[data['to_client_id']]
+        console.log(toClientName)
+        if (!mainService.vars.chatService.chatHistory[toClientName]) {
+            mainService.vars.chatService.chatHistory[toClientName] = []
+        }
+        mainService.vars.chatService.chatHistory[toClientName].push(data)
+    }
+
+    /**
+     * 未读消息记录
+     */
+    if (data['from_client_name'] !== mainService.getUser()) {
+
+        mainService.vars.chatService.newMsgCount++
+        app.badgeCount = mainService.vars.chatService.newMsgCount
+
+        let notification = new Notification({
+            title: data['from_client_name'],
+            "body": "新消息",
+            icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
+        })
+
+        if (mainService.getWin().isDestroyed()){
+            // 窗口已经销毁，点的是关闭按钮, win == null
+            notification.on('click', ()=> {
+                mainService.vars.chatService.reCreateChatWindow()
+            })
+        }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
+            // 窗口没销毁，只是不是焦点
+            notification.on('click', ()=>{
+                mainService.getWin().show()
+            })
+        }else{
+            // 窗口没销毁，只是最小化了。
+            console.log("未处理")
+        }
+
+
+        notification.show()
+    }
+}
+
+
+function reCreateChatWindow(){
+    mainService.vars.win = null
+    mainService.vars.win = mainService.createMainWindow()
+    mainService.vars.win.setSize(1280, 800)
+    // 然后加载应用的 index.html。
+    mainService.vars.win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
+    mainService.vars.win.on('ready-to-show', () => {
+        //mainService.getWin().openDevTools()
+        mainService.vars.win.show()
+        let restoreInfoObj = {
+            currentContact: mainService.vars.chatService.currentContactName,
+            contactList: mainService.vars.chatService.contactList,
+            chatHistory: mainService.vars.chatService.chatHistory
+        }
+        mainService.vars.win.webContents.send('restore-currentContact', restoreInfoObj)
+    })
+}
+
 module.exports.connect = connect()
 module.exports.getWsConnection = () =>{
     return this.wsConnection
@@ -234,6 +253,3 @@ module.exports.getWsConnection = () =>{
 module.exports.getVars = () => {
     return mainService.vars.chatService
 }
-
-
-

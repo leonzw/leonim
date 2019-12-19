@@ -193,6 +193,7 @@ module.exports.vars = {
         currentContactId: null,
         currentContactName: null,
         contactList: null,
+        reCreateChatWindow: null,
         clientId: null},
     config:config
 }
