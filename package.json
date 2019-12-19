@@ -29,8 +29,8 @@
     "appId": "com.leon.app",
     "copyright": "Copyright © 2019 ${author}",
     "productName": "leonim",
-    "mac" : {
-      "category" : "com.leon.im",
+    "mac": {
+      "category": "com.leon.im",
       "icon": "src/resources/images/chat-xl.png"
     }
   },
