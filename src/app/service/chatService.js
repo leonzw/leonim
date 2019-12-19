@@ -241,7 +241,14 @@ function sayAction(str){
     /**
      * 未读消息记录
      */
-    if (data['from_client_name'] !== mainService.getUser()) {
+    console.log(mainService.getUser())
+    console.log(data['from_client_name'])
+    if (data['from_client_name'] === mainService.getUser()){
+        // 我发给别人的
+    } else if( !mainService.getWin().isDestroyed() && mainService.getWin() !== null && mainService.getWin().isFocused()){
+        // 当前窗口存在且是焦点
+    }else{
+        // 该通知啦
 
         mainService.vars.chatService.newMsgCount++
         app.badgeCount = mainService.vars.chatService.newMsgCount
@@ -278,6 +285,7 @@ function sayAction(str){
 
         notification.show()
     }
+
 }
 
 
