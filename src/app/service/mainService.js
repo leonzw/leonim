@@ -30,7 +30,7 @@ exports.openChatWindow = (username,password) =>{
      * Open chat window
      */
     //console.log(win)
-    win.setSize(1280,800)
+    win.setSize(1280,740)
     win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
 }
 
@@ -152,6 +152,7 @@ exports.createMainWindow = () => {
         //console.log("Window restore again")
         win.setSkipTaskbar(true)
     });
+
 
 
     // 当 window 被关闭，这个事件会被触发。
