@@ -11,6 +11,9 @@ ipcRenderer.on('restore-currentContact', (event,msg)=>{
     flushContactList(event, msg.contactList)
     selectTarget(msg.currentContact)
 })
+ipcRenderer.on('user-offline-say', (event,msg)=>{
+    window.alert('联系人已经离线,发送失败')
+})
 
 
 function selectTarget(name){
@@ -30,7 +33,7 @@ function onMessage(event,message){
 function scrollChatHisotryToBottom() {
     var msg_history = $("#msg_history")
     var top_height = msg_history.prop("scrollHeight") - msg_history.height()
-    msg_history.animate({ scrollTop: top_height }, 500);
+    msg_history.animate({ scrollTop: top_height }, 0);
 }
 
 function renderMessage(data){
@@ -52,7 +55,7 @@ function renderMessage(data){
     }else{
         $("#msg_history").append(
             '<div class="incoming_msg">\n' +
-            '  <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+            '  <div class="incoming_msg_img"> <img src="../images/user-profile.png" alt="sunil"> </div>\n' +
             '  <div class="received_msg">\n' +
             '  <div class="received_withd_msg">\n' +
             '    <p>'+content+'</p>\n' +

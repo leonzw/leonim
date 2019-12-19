@@ -71,15 +71,11 @@ function onMessage(str,wsConnection){
         case 'login':
             //{"type":"login","client_id":xxx,"client_name":"xxx","client_list":"[...]","time":"xxx"}
             //say(data['client_id'], data['client_name'],  data['client_name']+' 加入了聊天室', data['time']);
-            if(mainService.vars.chatService.contactList === null)
-            {
+            if(mainService.vars.chatService.contactList === null){
                 mainService.vars.chatService.contactList = data['client_list'];
-            }
-            else
-            {
+            }else{
                 mainService.vars.chatService.contactList[data['client_id']] = data['client_name'];
             }
-            //flush_client_list();
 
             if (data['client_name'] === mainService.getUser()){
                 /**
@@ -88,7 +84,46 @@ function onMessage(str,wsConnection){
                 mainService.vars.chatService.clientId = data['client_id']
             }
 
-            mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
+            // 不管前端是否存在，先发个通知消息吧
+            if (!mainService.getWin().isDestroyed()){
+                mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
+            }
+
+
+            if (data['client_name'] !== mainService.getUser()) {
+                let notification = new Notification({
+                    title: "登录信息",
+                    "body": data['client_name'] + "上线",
+                    icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
+                })
+
+                if (mainService.getWin().isDestroyed()){
+                    // 窗口已经销毁，点的是关闭按钮, win == null
+                    notification.on('click', ()=> {
+                        mainService.vars.chatService.currentContactName = data['client_name']
+                        mainService.vars.chatService.reCreateChatWindow()
+                    })
+                }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
+                    // 窗口没销毁，只是不是焦点
+                    notification.on('click', ()=>{
+                        mainService.vars.chatService.currentContactName = data['client_name']
+                        let restoreInfoObj = {
+                            currentContact: mainService.vars.chatService.currentContactName,
+                            contactList: mainService.vars.chatService.contactList,
+                            chatHistory: mainService.vars.chatService.chatHistory
+                        }
+                        mainService.getWin().webContents.send('restore-currentContact', restoreInfoObj)
+                        mainService.getWin().show()
+                    })
+                }else{
+                    // 窗口没销毁，只是最小化了。
+                    console.log("未处理")
+                }
+                notification.show()
+            }
+
+
+
             break;
         // 发言
         case 'say':
@@ -99,7 +134,11 @@ function onMessage(str,wsConnection){
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
             delete mainService.vars.chatService.contactList[data['from_client_id']];
-            mainService.getWin().webContents.send('msg-history-list', mainService.vars.chatService.contactList)
+            console.log(mainService.vars.chatService.contactList)
+            if (!mainService.getWin().isDestroyed()) {
+                mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
+            }
+
     }
 }
 
@@ -186,11 +225,17 @@ function sayAction(str){
         // 我发给别人的
 
         let toClientName = mainService.vars.chatService.contactList[data['to_client_id']]
-        console.log(toClientName)
-        if (!mainService.vars.chatService.chatHistory[toClientName]) {
-            mainService.vars.chatService.chatHistory[toClientName] = []
+        if (toClientName === undefined){
+            //联系人已经离线
+            console.log("User offline now")
+            mainService.getWin().webContents.send('user-offline-say', str)
+        } else{
+            if (!mainService.vars.chatService.chatHistory[toClientName]) {
+                mainService.vars.chatService.chatHistory[toClientName] = []
+            }
+            mainService.vars.chatService.chatHistory[toClientName].push(data)
         }
-        mainService.vars.chatService.chatHistory[toClientName].push(data)
+
     }
 
     /**
@@ -210,11 +255,19 @@ function sayAction(str){
         if (mainService.getWin().isDestroyed()){
             // 窗口已经销毁，点的是关闭按钮, win == null
             notification.on('click', ()=> {
+                mainService.vars.chatService.currentContactName = data['from_client_name']
                 mainService.vars.chatService.reCreateChatWindow()
             })
         }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
             // 窗口没销毁，只是不是焦点
             notification.on('click', ()=>{
+                mainService.vars.chatService.currentContactName = data['from_client_name']
+                let restoreInfoObj = {
+                    currentContact: mainService.vars.chatService.currentContactName,
+                    contactList: mainService.vars.chatService.contactList,
+                    chatHistory: mainService.vars.chatService.chatHistory
+                }
+                mainService.getWin().webContents.send('restore-currentContact', restoreInfoObj)
                 mainService.getWin().show()
             })
         }else{
