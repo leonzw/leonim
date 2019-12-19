@@ -28,9 +28,6 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('focus',()=>{
-  mainService.getWin().badgeCount = 0
-})
 
 app.on('activate', () => {
   /**
@@ -40,7 +37,7 @@ app.on('activate', () => {
     mainService.vars.chatService.newMsgCount = 0;   // 新消息改成0
     app.badgeCount = 0
   //console.log(mainService.getWin())
-  if (mainService.getWin() === null || mainService.getWin().isDestroyed) {
+  if (mainService.getWin() === null || mainService.getWin().isDestroyed()) {
     mainService.win = null
     mainService.createMainWindow()
     mainService.getWin().setSize(1280,800)

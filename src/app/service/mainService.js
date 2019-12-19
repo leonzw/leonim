@@ -168,6 +168,10 @@ exports.createMainWindow = () => {
         }
     })
 
+    win.on('focus',()=>{
+        app.badgeCount = 0
+    })
+
 }
 
 
