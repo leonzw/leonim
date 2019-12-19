@@ -42,7 +42,7 @@
                 </div>
                 <div class="type_msg">
                     <div class="input_msg_write">
-                        <input type="text" class="write_msg" placeholder="Type a message" id="sendMsg" name="sendMsg" />
+                        <textarea type="text" class="write_msg" placeholder="Type a message" id="sendMsg" name="sendMsg" style="height: 102px; width: 770px;" ></textarea>
                         <button class="msg_send_btn" type="button" onclick="sendMsg()"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
 
 <script type="text/javascript">
 
-    var msgInput = document.querySelector('#sendMsg')
+    let msgInput = document.querySelector('#sendMsg')
     msgInput.addEventListener('keydown',event=>{
         if (event.keyCode === 13 && !event.ctrlKey) {
             sendMsg()
@@ -66,23 +66,6 @@
             msgInput.value += "\n"
         }
     })
-
-    // window.jQuery('#sendMsg').on("keydown", function(e) {
-    //     // 按enter键自动提交
-    //     if(e.keyCode === 13 && !e.ctrlKey) {
-    //         e.preventDefault();
-    //         sendMsg()
-    //         //$('form').submit();
-    //         return false;
-    //     }
-    //
-    //     // 按ctrl+enter组合键换行
-    //     if(e.keyCode === 13 && e.ctrlKey) {
-    //         $(this).val(function(i,val){
-    //             return val + "\n";
-    //         });
-    //     }
-    // });
 
     // window.onbeforeunload = (e) => {
     //     console.log('I do not want to be closed')

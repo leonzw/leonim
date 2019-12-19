@@ -4,11 +4,10 @@ const config = require(path.join(app.getAppPath(), "src","config.json"))
 let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
 var ws = require("nodejs-websocket")
 var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
+var wsConnection = null
 
-
-
-module.exports.wsConnection
 mainService.vars.chatService.reCreateChatWindow = reCreateChatWindow
+connect()
 
 app.on('activate', () => {
     /**
@@ -36,25 +35,25 @@ ipcMain.on('msg-history-list', getChatHistory)
 
 
 function connect(){
-    this.wsConnection = ws.connect(wsUrl, ()=>{
+    wsConnection = ws.connect(wsUrl, ()=>{
         console.log("Connected")
         var login_data = '{"type":"login","client_name":"'+mainService.getUser()+'","room_id":1}';
         console.log("websocket握手成功，发送登录数据:"+login_data);
-        this.wsConnection.send(login_data);
+        wsConnection.send(login_data);
         //console.log(login_data)
     });
-    this.wsConnection.on('error',(err)=>{
+    wsConnection.on('error',(err)=>{
         console.log("Websocket 出错了 : " + err)
     })
 
-    this.wsConnection.on('text', (str)=>{
+    wsConnection.on('text', (str)=>{
         //console.log(str)
-        onMessage(str,this.wsConnection)
+        onMessage(str,wsConnection)
     })
 
-    this.wsConnection.on('close', ()=> {
+    wsConnection.on('close', ()=> {
         console.log("连接关闭，定时重连");
-        connect(this.wsConnection);
+        connect(wsConnection);
     });
 }
 
@@ -150,13 +149,15 @@ function onMessage(str,wsConnection){
 function sendMsg(event,msg){
     console.log("发送" + msg)
 
-    var to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
-    wsConnection.send(
+    let to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
+    let msgStr =
         '{"type":"say","to_client_id":"'+to_client_id
-        +'","to_client_name":"'+msg
+        +'","to_client_name":"'+mainService.vars.chatService.currentContactName
         +'","content":"'
         +msg.replace(/"/g, '\\"').replace(/\n/g,'\\n').replace(/\r/g, '\\r')
-        +'"}');
+        +'"}'
+    console.log(msgStr)
+    wsConnection.send(msgStr);
 
 
 }
@@ -307,10 +308,7 @@ function reCreateChatWindow(){
     })
 }
 
-module.exports.connect = connect()
-module.exports.getWsConnection = () =>{
-    return this.wsConnection
-}
+
 module.exports.getVars = () => {
     return mainService.vars.chatService
 }
