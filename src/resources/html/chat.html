@@ -58,6 +58,7 @@
     let msgInput = document.querySelector('#sendMsg')
     msgInput.addEventListener('keydown',event=>{
         if (event.keyCode === 13 && !event.ctrlKey) {
+            event.preventDefault()
             sendMsg()
             return false
         }

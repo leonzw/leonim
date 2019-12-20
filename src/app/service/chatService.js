@@ -7,6 +7,7 @@ var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
 var wsConnection = null
 
 mainService.vars.chatService.reCreateChatWindow = reCreateChatWindow
+
 connect()
 
 app.on('activate', () => {
@@ -30,7 +31,7 @@ app.on('activate', () => {
 ipcMain.on('msg-send',sendMsg)
 ipcMain.on('msg-targetClient', changeTarget)
 ipcMain.on('msg-history-list', getChatHistory)
-
+ipcMain.on('window-resize', windowResize)
 
 
 
@@ -242,8 +243,6 @@ function sayAction(str){
     /**
      * 未读消息记录
      */
-    console.log(mainService.getUser())
-    console.log(data['from_client_name'])
     if (data['from_client_name'] === mainService.getUser()){
         // 我发给别人的
     } else if( !mainService.getWin().isDestroyed() && mainService.getWin() !== null && mainService.getWin().isFocused()){
@@ -293,7 +292,7 @@ function sayAction(str){
 function reCreateChatWindow(){
     mainService.vars.win = null
     mainService.vars.win = mainService.createMainWindow()
-    mainService.vars.win.setSize(1280, 800)
+    mainService.vars.win.setSize(mainService.vars.chatService.windowSize.width, mainService.vars.chatService.windowSize.height)
     // 然后加载应用的 index.html。
     mainService.vars.win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
     mainService.vars.win.on('ready-to-show', () => {
@@ -308,6 +307,10 @@ function reCreateChatWindow(){
     })
 }
 
+function windowResize(event,msg){
+    mainService.vars.chatService.windowSize.width = msg.width;
+    mainService.vars.chatService.windowSize.height = msg.height;
+}
 
 module.exports.getVars = () => {
     return mainService.vars.chatService

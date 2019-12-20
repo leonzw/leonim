@@ -10,6 +10,7 @@ ipcRenderer.on('restore-currentContact', (event,msg)=>{
     console.log(msg)
     flushContactList(event, msg.contactList)
     selectTarget(msg.currentContact)
+    resizeWindow()
 })
 ipcRenderer.on('user-offline-say', ()=>{ window.alert('联系人已经离线,发送失败')})
 
@@ -69,7 +70,8 @@ function renderMessage(data){
 function sendMsg(){
     var msg = $('#sendMsg').val()
     ipcRenderer.send('msg-send', msg)
-    $('#sendMsg').val(null)
+    $('#sendMsg').val('')
+    document.querySelector('#sendMsg').value = ''
 }
 
 function flushContactList(event, message){
@@ -132,7 +134,7 @@ function changeTarget(target, cname) {
     ipcRenderer.send('msg-targetClient', cname)
 }
 var resizeTimer = null
-window.onresize = ()=>{
+function resizeWindow(){
     // if (resizeTimer) clearTimeout(resizeTimer)
     // resizeTimer = setTimeout(()=>{
     //     console.log(window.outerHeight)
@@ -145,4 +147,10 @@ window.onresize = ()=>{
     document.querySelector("div[class='inbox_chat']").setAttribute("style","height:" + leftListInboxChatHeight + "px")
     document.querySelector("#msg_history").setAttribute("style","height:" + rightMsgHistory + "px")
     document.querySelector("textarea[class='write_msg']").setAttribute("style","height:105px;width:" + rightMsgTextareaWidth + "px")
+
+    // Notify the backend
+    ipcRenderer.send('window-resize', {"width":window.outerWidth, "height":window.outerHeight})
+}
+window.onresize = ()=>{
+    resizeWindow()
 }
