@@ -1,12 +1,17 @@
-const { app, ipcMain, Notification } = require('electron')
+const { app, ipcMain, Notification, clipboard , BrowserWindow} = require('electron')
+const fs = require("fs");
 const path = require('path');
 const config = require(path.join(app.getAppPath(), "src","config.json"))
 let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
 var ws = require("nodejs-websocket")
 var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
+
 var wsConnection = null
 
 mainService.vars.chatService.reCreateChatWindow = reCreateChatWindow
+module.exports.getVars = () => {
+    return mainService.vars.chatService
+}
 
 connect()
 
@@ -32,8 +37,8 @@ ipcMain.on('msg-send',sendMsg)
 ipcMain.on('msg-targetClient', changeTarget)
 ipcMain.on('msg-history-list', getChatHistory)
 ipcMain.on('window-resize', windowResize)
-
-
+ipcMain.on('msg-image-send', prepareImg)
+ipcMain.on('msg-img-send-ok', sendImgOk)
 
 function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
@@ -312,6 +317,44 @@ function windowResize(event,msg){
     mainService.vars.chatService.windowSize.height = msg.height;
 }
 
-module.exports.getVars = () => {
-    return mainService.vars.chatService
+function prepareImg() {
+
+
+    let image = clipboard.readImage()
+    let imagePath = path.join(app.getAppPath(), "src", "resources", "caches", "img", "snapshot.png")
+    let fd = fs.openSync(imagePath, 'w');
+    let buff = Buffer.alloc(image.toPNG().length, image.toPNG(), 'base64')
+
+    fs.write(fd,buff,0,buff.length,0,(err,bytesWritten)=>{
+        console.log(err,bytesWritten)
+        if (bytesWritten === 0){
+            // image null
+            mainService.getWin().webContents.send('image-clipboard-failed');
+        } else {
+            loadPreviewWindow()
+        }
+    })
+
 }
+
+function loadPreviewWindow(){
+
+
+        // 创建浏览器窗口
+        let preViewImageWin = new BrowserWindow({
+            width: 800,
+            height: 600,
+            webPreferences: {
+                nodeIntegration: true
+            }
+        })
+
+        if(mainService.vars.config.openDebugTool)preViewImageWin.openDevTools()
+        // 加载index.html文件
+        preViewImageWin.loadFile(path.join(app.getAppPath(), "src", "resources", "html", "preViewImage.html"))
+}
+
+function sendImgOk(event, msg) {
+    console.log('sent')
+}
+

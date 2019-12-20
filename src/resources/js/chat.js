@@ -13,6 +13,7 @@ ipcRenderer.on('restore-currentContact', (event,msg)=>{
     resizeWindow()
 })
 ipcRenderer.on('user-offline-say', ()=>{ window.alert('联系人已经离线,发送失败')})
+ipcRenderer.on('image-clipboard-failed', ()=>{window.alert('剪切板图片不存在，请重试')})
 
 
 function selectTarget(name){
@@ -141,7 +142,7 @@ function resizeWindow(){
     // }, 500)
     let leftListHeight = window.outerHeight - 83
     let leftListInboxChatHeight = window.outerHeight - 83 - 77
-    let rightMsgHistory = window.outerHeight - 224
+    let rightMsgHistory = window.outerHeight - 264
     let rightMsgTextareaWidth = document.querySelector("#mesgs").scrollWidth - 110
     document.querySelector("#inbox_people").setAttribute("style","height:" + leftListHeight + "px")
     document.querySelector("div[class='inbox_chat']").setAttribute("style","height:" + leftListInboxChatHeight + "px")
@@ -154,3 +155,10 @@ function resizeWindow(){
 window.onresize = ()=>{
     resizeWindow()
 }
+
+
+function sendImg() {
+    ipcRenderer.send('msg-image-send')
+}
+
+
