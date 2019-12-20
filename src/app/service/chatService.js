@@ -1,12 +1,14 @@
-const { app, ipcMain, Notification, clipboard , BrowserWindow} = require('electron')
+const { app, ipcMain, Notification, clipboard , BrowserWindow} = require('electron');
+const nativeImage = require('electron').nativeImage
 const fs = require("fs");
 const path = require('path');
-const config = require(path.join(app.getAppPath(), "src","config.json"))
-let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"))
-var ws = require("nodejs-websocket")
-var wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat"
+const axios = require('axios');
+const config = require(path.join(app.getAppPath(), "src","config.json"));
+let mainService  = require(path.join(app.getAppPath(), "src", "app", "service", "mainService.js"));
+let ws = require("nodejs-websocket");
+let wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat";
 
-var wsConnection = null
+let wsConnection = null
 
 mainService.vars.chatService.reCreateChatWindow = reCreateChatWindow
 module.exports.getVars = () => {
@@ -33,12 +35,12 @@ app.on('activate', () => {
  * 用户列表
  */
 
-ipcMain.on('msg-send',sendMsg)
-ipcMain.on('msg-targetClient', changeTarget)
-ipcMain.on('msg-history-list', getChatHistory)
-ipcMain.on('window-resize', windowResize)
-ipcMain.on('msg-image-send', prepareImg)
-ipcMain.on('msg-img-send-ok', sendImgOk)
+ipcMain.on('msg-send',sendMsg);
+ipcMain.on('msg-targetClient', changeTarget);
+ipcMain.on('msg-history-list', getChatHistory);
+ipcMain.on('window-resize', windowResize);
+ipcMain.on('msg-image-send', prepareImg);
+ipcMain.on('msg-img-send-ok', sendImgOk);
 
 function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
@@ -66,7 +68,7 @@ function connect(){
 
 function onMessage(str,wsConnection){
     console.log("===服务端消息 : " + str);
-    var data = JSON.parse(str);
+    let data = JSON.parse(str);
     switch(data['type']){
         // 服务端ping客户端
         case 'ping':
@@ -135,6 +137,10 @@ function onMessage(str,wsConnection){
             //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
             sayAction(str)
             break;
+        case 'sayImg':
+            //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
+            sayAction(str)
+            break;
         // 用户退出 更新用户列表
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
@@ -153,7 +159,7 @@ function onMessage(str,wsConnection){
  * @param msg
  */
 function sendMsg(event,msg){
-    console.log("发送" + msg)
+    //console.log("发送" + msg)
 
     let to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
     let msgStr =
@@ -359,5 +365,31 @@ function sendImgOk() {
     /**
      * 开始发送图片
      */
+
+    let imgNative = nativeImage.createFromPath(path.join(app.getPath('userData'), "/snapshot.png"))
+
+    axios.post('http://localhost:33533/image.php', {
+        img: imgNative.toDataURL()
+        })
+        .then(function (response) {
+            //console.log(response);
+            if (response.data !== null){
+                // Say msg
+
+                let to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
+                let msgStr =
+                    '{"type":"sayImg","to_client_id":"'+to_client_id
+                    +'","to_client_name":"'+mainService.vars.chatService.currentContactName
+                    +'","content":"'
+                    + "<img src='" + mainService.vars.config.webServer + response.data + "' />"
+                    +'"}'
+                console.log(msgStr)
+                wsConnection.send(msgStr);
+
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
 }
 

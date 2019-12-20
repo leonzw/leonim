@@ -56,11 +56,11 @@
 
 <script type="text/javascript">
 
-    let msgInput = document.querySelector('#sendMsg')
+    let msgInput = document.querySelector('#sendMsg');
     msgInput.addEventListener('keydown',event=>{
         if (event.keyCode === 13 && !event.ctrlKey) {
-            event.preventDefault()
-            sendMsg()
+            event.preventDefault();
+            sendMsg();
             return false
         }
 
