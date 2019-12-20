@@ -321,12 +321,12 @@ function prepareImg() {
 
 
     let image = clipboard.readImage()
-    let imagePath = path.join(app.getAppPath(), "src", "resources", "caches", "img", "snapshot.png")
+    let imagePath = path.join(app.getPath('userData'), "/snapshot.png")
     let fd = fs.openSync(imagePath, 'w');
     let buff = Buffer.alloc(image.toPNG().length, image.toPNG(), 'base64')
 
     fs.write(fd,buff,0,buff.length,0,(err,bytesWritten)=>{
-        console.log(err,bytesWritten)
+        //console.log(err,bytesWritten)
         if (bytesWritten === 0){
             // image null
             mainService.getWin().webContents.send('image-clipboard-failed');
@@ -354,7 +354,10 @@ function loadPreviewWindow(){
         preViewImageWin.loadFile(path.join(app.getAppPath(), "src", "resources", "html", "preViewImage.html"))
 }
 
-function sendImgOk(event, msg) {
+function sendImgOk() {
     console.log('sent')
+    /**
+     * 开始发送图片
+     */
 }
 

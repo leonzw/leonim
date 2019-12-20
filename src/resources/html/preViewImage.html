@@ -11,8 +11,14 @@
     <script src="../js/jquery-3.4.1.min.js"></script>
     <script src="../js/popper.min.js"></script>
     <script>
+        const backend = require('electron').remote
         function loadJquery(){
             window.$ = window.jQuery = module.exports;
+        }
+
+        function loadImage(){
+            let imagePath = backend.app.getPath('userData')+ "/snapshot.png"
+            document.querySelector('#snapshotImg').setAttribute('src',imagePath)
         }
     </script>
 </head>
@@ -24,20 +30,21 @@
     </div>
     <div class="row">
         <div class="col-sm-12">
-            <div class="container-sm"><img src="../caches/img/snapshot.png" /></div>
+            <div class="container-sm"><img id="snapshotImg" src="" /></div>
         </div>
     </div>
 
 </div>
 </body>
 <script>
-    function cancel(){
-        window.close()
-    }
+loadImage();
+function cancel(){
+    window.close()
+}
 
-    function send(){
-        require('electron').ipcRenderer.send('msg-img-send-ok')
-        window.close()
-    }
+function send(){
+    require('electron').ipcRenderer.send('msg-img-send-ok')
+    window.close()
+}
 </script>
 </html>
