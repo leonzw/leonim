@@ -47,7 +47,7 @@ ipcMain.on('msg-image-view', loadImageViewDetailsWindow)
 function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
         console.log("Connected")
-        var login_data = '{"type":"login","client_name":"'+mainService.getUser()+'","room_id":1}';
+        var login_data = '{"type":"login","client_name":"'+mainService.getUser().username+'", "password":"' + mainService.getUser().password + '","room_id":1}';
         console.log("websocket握手成功，发送登录数据:"+login_data);
         wsConnection.send(login_data);
         //console.log(login_data)
@@ -86,7 +86,7 @@ function onMessage(str,wsConnection){
                 mainService.vars.chatService.contactList[data['client_id']] = data['client_name'];
             }
 
-            if (data['client_name'] === mainService.getUser()){
+            if (data['client_name'] === mainService.getUser().username){
                 /**
                  * 当前登录用户，设置一下client_id
                  */
@@ -99,7 +99,7 @@ function onMessage(str,wsConnection){
             }
 
 
-            if (data['client_name'] !== mainService.getUser()) {
+            if (data['client_name'] !== mainService.getUser().username) {
                 let notification = new Notification({
                     title: "登录信息",
                     "body": data['client_name'] + "上线",
@@ -206,7 +206,7 @@ function getClientIdByClientName(name){
 
 function sayAction(str){
     var data = JSON.parse(str);
-    if (data['from_client_name'] === mainService.getUser()) {
+    if (data['from_client_name'] === mainService.getUser().username) {
         data['msgToMe'] = false
     }else {
         data['msgToMe'] = true
@@ -221,7 +221,7 @@ function sayAction(str){
         mainService.getWin() === null ||
         mainService.getWin().isDestroyed()) {
         // Don't do anything
-    }else if(mainService.vars.chatService.currentContactName !== data['from_client_name'] && mainService.getUser() !== data['from_client_name']){
+    }else if(mainService.vars.chatService.currentContactName !== data['from_client_name'] && mainService.getUser().username !== data['from_client_name']){
         // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
     }else{
         mainService.getWin().webContents.send('msg-receive', str)
@@ -256,7 +256,7 @@ function sayAction(str){
     /**
      * 未读消息记录
      */
-    if (data['from_client_name'] === mainService.getUser()){
+    if (data['from_client_name'] === mainService.getUser().username){
         // 我发给别人的
     } else if( !mainService.getWin().isDestroyed() && mainService.getWin() !== null && mainService.getWin().isFocused()){
         // 当前窗口存在且是焦点

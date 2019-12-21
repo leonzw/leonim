@@ -24,7 +24,10 @@ exports.openChatWindow = (username,password) =>{
      * Connect Web socket and run as service
      */
 
-    user = username
+    user = {
+        "username" : username,
+        "password" : password
+    }
 
     /**
      * Open chat window

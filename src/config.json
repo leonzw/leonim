@@ -1,10 +1,10 @@
 {
   "debug"   : false,
   "mockup"  : false,
-  "openDebugTool" : false,
+  "openDebugTool" : true,
   "ws" : {
-    "server" : "47.104.56.147",
+    "server" : "localhost",
     "port"   : 33133
   },
-  "webServer" : "http://47.104.56.147:33533"
+  "webServer" : "http://localhost:33533"
 }
