@@ -156,9 +156,10 @@ window.onresize = ()=>{
     resizeWindow()
 }
 
-
 function sendImg() {
     ipcRenderer.send('msg-image-send')
 }
 
-
+function viewImage(obj){
+    ipcRenderer.send('msg-image-view', obj.src)
+}

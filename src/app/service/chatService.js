@@ -9,6 +9,7 @@ let ws = require("nodejs-websocket");
 let wsUrl = "ws://" + config.ws.server + ":" + config.ws.port + "/chat";
 
 let wsConnection = null
+global.currentImgUrl = ''
 
 mainService.vars.chatService.reCreateChatWindow = reCreateChatWindow
 module.exports.getVars = () => {
@@ -41,6 +42,7 @@ ipcMain.on('msg-history-list', getChatHistory);
 ipcMain.on('window-resize', windowResize);
 ipcMain.on('msg-image-send', prepareImg);
 ipcMain.on('msg-img-send-ok', sendImgOk);
+ipcMain.on('msg-image-view', loadImageViewDetailsWindow)
 
 function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
@@ -344,8 +346,6 @@ function prepareImg() {
 }
 
 function loadPreviewWindow(){
-
-
         // 创建浏览器窗口
         let preViewImageWin = new BrowserWindow({
             width: 800,
@@ -360,6 +360,20 @@ function loadPreviewWindow(){
         preViewImageWin.loadFile(path.join(app.getAppPath(), "src", "resources", "html", "preViewImage.html"))
 }
 
+function loadImageViewDetailsWindow(event,msg){
+    // 创建浏览器窗口
+    let win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            nodeIntegration: true
+        }
+    })
+    global.currentImgUrl = msg
+    // 加载index.html文件
+    win.loadFile(path.join(app.getAppPath(), "src", "resources", "html", "imageViewDetails.html"))
+}
+
 function sendImgOk() {
     console.log('sent')
     /**
@@ -368,7 +382,7 @@ function sendImgOk() {
 
     let imgNative = nativeImage.createFromPath(path.join(app.getPath('userData'), "/snapshot.png"))
 
-    axios.post('http://localhost:33533/image.php', {
+    axios.post(mainService.vars.config.webServer + '/image.php', {
         img: imgNative.toDataURL()
         })
         .then(function (response) {
@@ -381,7 +395,7 @@ function sendImgOk() {
                     '{"type":"sayImg","to_client_id":"'+to_client_id
                     +'","to_client_name":"'+mainService.vars.chatService.currentContactName
                     +'","content":"'
-                    + "<img src='" + mainService.vars.config.webServer + response.data + "' />"
+                    + "<img onclick='viewImage(this)' src='" + mainService.vars.config.webServer + response.data + "' />"
                     +'"}'
                 console.log(msgStr)
                 wsConnection.send(msgStr);

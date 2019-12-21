@@ -142,15 +142,9 @@ img{ max-width:100%;}
 }
 
 .write_msg{border: 0px;}
-input:focus, textarea:focus {
-    outline: none;
-}
-textarea {
-    resize:none
-}
-input::-ms-clear {
-    display: none;
-}
-
+input:focus, textarea:focus {outline: none;}
+textarea {resize:none}
+input::-ms-clear {display: none;}
 .input_menu{ height: 40px; background-color: #E3E3E3 }
 .input_menu button{margin-top: 5px; margin-left: 5px;}
+.imgViewDetail{cursor: pointer}

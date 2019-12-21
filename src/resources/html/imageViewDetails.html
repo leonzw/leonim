@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Leon自制聊天工具</title>
+    <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <!--<link rel="stylesheet" href="../css/font-awesome.css" type="text/css" >-->
+    <link rel="stylesheet" href="../css/chat.css">
+    <script src="../js/jquery-3.4.1.min.js"></script>
+    <script src="../js/popper.min.js"></script>
+    <script>
+
+        function loadImage(){
+            let imagePath = require('electron').remote.getGlobal('currentImgUrl')
+            document.querySelector('#snapshotImg').setAttribute('src',imagePath)
+        }
+    </script>
+</head>
+<body style="padding: 5px;">
+<img id="snapshotImg" src="" />
+</body>
+<script>
+loadImage();
+</script>
+</html>
