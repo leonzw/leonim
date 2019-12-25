@@ -92,7 +92,7 @@ function onMessage(str,wsConnection){
         // 用户退出 更新用户列表
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
-            delete mainService.vars.chatService.contactList[data['from_client_id']];
+            delete mainService.vars.chatService.contactList[data['from_uid']];
             console.log(mainService.vars.chatService.contactList)
             if (!mainService.getWin().isDestroyed()) {
                 mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
@@ -109,14 +109,12 @@ function onMessage(str,wsConnection){
 function sendMsg(event,msg){
     //console.log("发送" + msg)
 
-    let to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
+    let to_uid = mainService.vars.chatService.currentContactId
     let msgStr =
-        '{"type":"say","to_client_id":"'+to_client_id
-        +'","to_client_name":"'+mainService.vars.chatService.currentContactName
-        +'","content":"'
+        '{"type":"say","to_uid":'+to_uid + ', "from_uid":' + mainService.vars.chatService.uid
+        +',"content":"'
         +msg.replace(/"/g, '\\"').replace(/\n/g,'\\n').replace(/\r/g, '\\r')
         +'"}'
-    console.log(msgStr)
     wsConnection.send(msgStr);
 
 
@@ -128,8 +126,13 @@ function sendMsg(event,msg){
  * @param msg
  */
 function changeTarget(event,msg){
-    mainService.vars.chatService.currentContactName = msg
-    mainService.vars.chatService.currentContactId = getClientIdByClientName(msg)
+    let currentContact = getContactByUid(msg);
+    if (currentContact){
+        mainService.vars.chatService.currentContactId = msg
+    } else{
+        console.log('change Target failed')
+    }
+
 }
 
 function getChatHistory(event,name){
@@ -139,24 +142,27 @@ function getChatHistory(event,name){
 }
 
 
-function getClientIdByClientName(name){
-    for (ci in mainService.vars.chatService.contactList){
-        if (mainService.vars.chatService.contactList[ci] === name){
-            return ci
-        }
+function getContactByUid(uid){
+    console.log(uid)
+    console.log(mainService.vars.chatService.contactList)
+    if (mainService.vars.chatService.contactList[uid] !== 'undefined'){
+        return mainService.vars.chatService.contactList[uid]
+    } else{
+        return false;
     }
+
 }
 
 
 function loginAction(str){
     let data = JSON.parse(str);
     //{"type":"login","client_id":xxx,"client_name":"xxx","client_list":"[...]","time":"xxx"}
-    //say(data['client_id'], data['client_name'],  data['client_name']+' 加入了聊天室', data['time']);
-    console.log(data)
+    //say(data['client_id'], data['name'],  data['name']+' 加入了聊天室', data['time']);
+    //console.log(data)
     if(mainService.vars.chatService.contactList === null){
         mainService.vars.chatService.contactList = data['client_list'];
     }else{
-        mainService.vars.chatService.contactList[data['uid']] = data['client_name'];
+        mainService.vars.chatService.contactList[data['uid']] = {'uid':data['uid'], 'name': data['name'], 'nickname':data['nickname']};
     }
 
     if (data['name'] === mainService.getUser().username){
@@ -172,25 +178,25 @@ function loginAction(str){
     }
 
 
-    if (data['client_name'] !== mainService.getUser().username) {
+    if (data['name'] !== mainService.getUser().username) {
         let notification = new Notification({
             title: "登录信息",
-            "body": data['client_name'] + "上线",
+            "body": data['name'] + "上线",
             icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
         })
 
         if (mainService.getWin().isDestroyed()){
             // 窗口已经销毁，点的是关闭按钮, win == null
             notification.on('click', ()=> {
-                mainService.vars.chatService.currentContactName = data['client_name']
+                mainService.vars.chatService.currentContactId = data['uid']
                 mainService.vars.chatService.reCreateChatWindow()
             })
         }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
             // 窗口没销毁，只是不是焦点
             notification.on('click', ()=>{
-                mainService.vars.chatService.currentContactName = data['client_name']
+                mainService.vars.chatService.currentContactId = data['uid']
                 let restoreInfoObj = {
-                    currentContact: mainService.vars.chatService.currentContactName,
+                    currentContact: mainService.vars.chatService.currentContactId,
                     contactList: mainService.vars.chatService.contactList,
                     chatHistory: mainService.vars.chatService.chatHistory
                 }
@@ -208,7 +214,7 @@ function loginAction(str){
 
 function sayAction(str){
     let data = JSON.parse(str);
-    if (data['from_client_name'] === mainService.getUser().username) {
+    if (data['from_uid'] === mainService.vars.chatService.uid) {
         data['msgToMe'] = false
     }else {
         data['msgToMe'] = true
@@ -218,12 +224,12 @@ function sayAction(str){
     /**
      * 通知渲染更新
      */
-
+    console.log(mainService.vars.chatService)
     if (typeof mainService.getWin() === 'undefined' ||
         mainService.getWin() === null ||
         mainService.getWin().isDestroyed()) {
         // Don't do anything
-    }else if(mainService.vars.chatService.currentContactName !== data['from_client_name'] && mainService.getUser().username !== data['from_client_name']){
+    }else if(mainService.vars.chatService.currentContactId !== data['to_uid'] && mainService.vars.chatService.uid !== data['from_uid']){
         // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
     }else{
         mainService.getWin().webContents.send('msg-receive', str)
@@ -234,14 +240,14 @@ function sayAction(str){
      */
     if (data['msgToMe']){
         // 别人给我说话
-        if (!mainService.vars.chatService.chatHistory[data['from_client_name']]) {
-            mainService.vars.chatService.chatHistory[data['from_client_name']] = []
+        if (!mainService.vars.chatService.chatHistory[data['from_uid']]) {
+            mainService.vars.chatService.chatHistory[data['from_uid']] = []
         }
-        mainService.vars.chatService.chatHistory[data['from_client_name']].push(data)
+        mainService.vars.chatService.chatHistory[data['from_uid']].push(data)
     } else{
         // 我发给别人的
 
-        let toClientName = mainService.vars.chatService.contactList[data['to_client_id']]
+        let toClientName = mainService.vars.chatService.contactList[data['to_uid']]
         if (toClientName === undefined){
             //联系人已经离线
             console.log("User offline now")
@@ -258,7 +264,7 @@ function sayAction(str){
     /**
      * 未读消息记录
      */
-    if (data['from_client_name'] === mainService.getUser().username){
+    if (data['from_uid'] === mainService.vars.chatService.uid){
         // 我发给别人的
     } else if( !mainService.getWin().isDestroyed() && mainService.getWin() !== null && mainService.getWin().isFocused()){
         // 当前窗口存在且是焦点
@@ -268,8 +274,10 @@ function sayAction(str){
         mainService.vars.chatService.newMsgCount++
         app.badgeCount = mainService.vars.chatService.newMsgCount
 
+        let tempContact = getContactByUid(data['from_uid'])
+
         let notification = new Notification({
-            title: data['from_client_name'],
+            title: tempContact['nickname'],
             "body": "新消息",
             icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
         })
@@ -277,15 +285,15 @@ function sayAction(str){
         if (mainService.getWin().isDestroyed()){
             // 窗口已经销毁，点的是关闭按钮, win == null
             notification.on('click', ()=> {
-                mainService.vars.chatService.currentContactName = data['from_client_name']
+                mainService.vars.chatService.currentContactId = tempContact['uid']
                 mainService.vars.chatService.reCreateChatWindow()
             })
         }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
             // 窗口没销毁，只是不是焦点
             notification.on('click', ()=>{
-                mainService.vars.chatService.currentContactName = data['from_client_name']
+                mainService.vars.chatService.currentContactId = tempContact['uid']
                 let restoreInfoObj = {
-                    currentContact: mainService.vars.chatService.currentContactName,
+                    currentContact: mainService.vars.chatService.currentContactId,
                     contactList: mainService.vars.chatService.contactList,
                     chatHistory: mainService.vars.chatService.chatHistory
                 }
@@ -314,7 +322,7 @@ function reCreateChatWindow(){
         //mainService.getWin().openDevTools()
         mainService.vars.win.show()
         let restoreInfoObj = {
-            currentContact: mainService.vars.chatService.currentContactName,
+            currentContact: mainService.vars.chatService.currentContactId,
             contactList: mainService.vars.chatService.contactList,
             chatHistory: mainService.vars.chatService.chatHistory
         }
@@ -392,10 +400,9 @@ function sendImgOk() {
             if (response.data !== null){
                 // Say msg
 
-                let to_client_id = getClientIdByClientName(mainService.vars.chatService.currentContactName)
+                let to_uid = mainService.vars.chatService.currentContactId
                 let msgStr =
-                    '{"type":"sayImg","to_client_id":"'+to_client_id
-                    +'","to_client_name":"'+mainService.vars.chatService.currentContactName
+                    '{"type":"sayImg","to_uid":"'+mainService.vars.chatService.currentContactId
                     +'","content":"'
                     + "<img onclick='viewImage(this)' src='" + mainService.vars.config.webServer + response.data + "' />"
                     +'"}'

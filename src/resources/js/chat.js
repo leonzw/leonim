@@ -25,7 +25,7 @@ function selectTarget(name){
 function onMessage(event,message){
     var data = JSON.parse(message);
 
-    //console.log(data)
+    console.log(data)
     renderMessage(data)
     scrollChatHisotryToBottom()
 }
@@ -37,12 +37,11 @@ function scrollChatHisotryToBottom() {
 }
 
 function renderMessage(data){
-    let from_client_id = data['from_client_id']
-    let from_client_name = data['from_client_name']
+    let from_uid = data['from_uid']
     let content = data['content']
     let time = data['time']
 
-    if (from_client_id == chatService.getVars().uid){
+    if (from_uid == chatService.getVars().uid){
         /**
          * 自己发出的留言，显示在自己这边
          */
@@ -70,21 +69,25 @@ function renderMessage(data){
 
 function sendMsg(){
     var msg = $('#sendMsg').val()
-    ipcRenderer.send('msg-send', msg)
-    $('#sendMsg').val('')
-    document.querySelector('#sendMsg').value = ''
+    if (msg.trim() != ''){
+        ipcRenderer.send('msg-send', msg)
+        $('#sendMsg').val('')
+        document.querySelector('#sendMsg').value = ''
+    }
+
 }
 
 function flushContactList(event, message){
     var contactList = message
+    console.log(contactList)
     $('#contactList').empty()
     for (contactId in contactList){
         if (contactId != chatService.getVars().uid){
-            $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactList[contactId].trim() +'" onclick="changeTarget(this,\''+contactList[contactId].trim()+'\')">\n' +
+            $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactList[contactId]['nickname'].trim() +'" onclick="changeTarget(this,\''+contactId+'\')">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
-                '                                <h5>'+contactList[contactId]+'\n' +
+                '                                <h5>'+contactList[contactId]['nickname']+'\n' +
                 '                                <p>'+contactId+'</p>\n' +
                 '                            </div>\n' +
                 '                        </div>\n' +
@@ -102,12 +105,12 @@ function flushHistory(event,message){
     }
 }
 
-function changeTarget(target, cname) {
-    if (!target || !cname) return false;
+function changeTarget(target, cid) {
+    if (!target || !cid) return false;
     /**
      * 修改聊天标题
      */
-    document.getElementById('targetContactTitle').innerText = "与 "+ cname+" 聊天中"
+    document.getElementById('targetContactTitle').innerText = "与 "+ cid+" 聊天中"
 
     /**
      * 找到已有的高亮，去掉高亮
@@ -127,12 +130,12 @@ function changeTarget(target, cname) {
     if (msgHistory != null) msgHistory.innerHTML = ''
 
 
-    ipcRenderer.send('msg-history-list', cname)
+    ipcRenderer.send('msg-history-list', cid)
 
     /**
      * 通知后台服务更新目标
      */
-    ipcRenderer.send('msg-targetClient', cname)
+    ipcRenderer.send('msg-targetClient', cid)
 }
 var resizeTimer = null
 function resizeWindow(){

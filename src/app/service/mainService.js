@@ -33,6 +33,10 @@ exports.openChatWindow = (username,password) =>{
      * Open chat window
      */
     //console.log(win)
+    // 打开开发者工具
+    if(config.openDebugTool === true){
+        win.webContents.openDevTools()
+    }
     win.setSize(1280,740)
     win.center()
     win.loadFile(path.join(app.getAppPath(), 'src', 'resources', 'html', 'chat.html'))
@@ -141,7 +145,7 @@ exports.createMainWindow = () => {
 
     // 打开开发者工具
     if(config.openDebugTool === true){
-        win.webContents.openDevTools()
+        //win.webContents.openDevTools()
     }
 
     win.once('ready-to-show', () => {
@@ -196,7 +200,6 @@ module.exports.vars = {
         newMsgCount: 0,
         chatHistory: [],
         currentContactId: null,
-        currentContactName: null,
         contactList: null,
         reCreateChatWindow: null,
         windowSize: {width:1280,height:740},
