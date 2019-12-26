@@ -48,7 +48,6 @@ function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
         console.log("Connected")
         var login_data = '{"type":"login","client_name":"'+mainService.getUser().username+'", "password":"' + mainService.getUser().password + '","room_id":1}';
-        console.log("websocket握手成功，发送登录数据:"+login_data);
         wsConnection.send(login_data);
         //console.log(login_data)
     });
@@ -69,7 +68,7 @@ function connect(){
 
 
 function onMessage(str,wsConnection){
-    console.log("===服务端消息 : " + str);
+    console.log("--- [Server info] : " + str);
     let data = JSON.parse(str);
     switch(data['type']){
         // 服务端ping客户端
@@ -93,7 +92,7 @@ function onMessage(str,wsConnection){
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
             delete mainService.vars.chatService.contactList[data['from_uid']];
-            console.log(mainService.vars.chatService.contactList)
+            //console.log(mainService.vars.chatService.contactList)
             if (!mainService.getWin().isDestroyed()) {
                 mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
             }
@@ -128,23 +127,23 @@ function sendMsg(event,msg){
 function changeTarget(event,msg){
     let currentContact = getContactByUid(msg);
     if (currentContact){
-        mainService.vars.chatService.currentContactId = msg
+        mainService.vars.chatService.currentContactId = Number.parseInt(msg)
     } else{
         console.log('change Target failed')
     }
 
 }
 
-function getChatHistory(event,name){
-    if (mainService.vars.chatService.chatHistory !== null && mainService.vars.chatService.chatHistory[name] !== null) {
-        event.reply('msg-history-list-reply', mainService.vars.chatService.chatHistory[name])
+function getChatHistory(event,uid){
+    if (mainService.vars.chatService.chatHistory !== null && mainService.vars.chatService.chatHistory[uid] !== null) {
+        event.reply('msg-history-list-reply', mainService.vars.chatService.chatHistory[uid])
     }
 }
 
 
 function getContactByUid(uid){
-    console.log(uid)
-    console.log(mainService.vars.chatService.contactList)
+    //console.log(uid)
+    //console.log(mainService.vars.chatService.contactList)
     if (mainService.vars.chatService.contactList[uid] !== 'undefined'){
         return mainService.vars.chatService.contactList[uid]
     } else{
@@ -224,15 +223,18 @@ function sayAction(str){
     /**
      * 通知渲染更新
      */
-    console.log(mainService.vars.chatService)
+    // console.log(mainService.vars.chatService)
     if (typeof mainService.getWin() === 'undefined' ||
         mainService.getWin() === null ||
         mainService.getWin().isDestroyed()) {
         // Don't do anything
-    }else if(mainService.vars.chatService.currentContactId !== data['to_uid'] && mainService.vars.chatService.uid !== data['from_uid']){
-        // 既不是我发给当前用户的，也不是当前用户发给我的， 别人的，不用更新页面
-    }else{
+    }else if(mainService.vars.chatService.currentContactId === data['to_uid']
+        || mainService.vars.chatService.uid === data['to_uid'] && mainService.vars.chatService.currentContactId === data['from_uid']
+    ){
+        // 我发给别人的且别人是当前窗口 或者 别人发给我且别人是当前窗口
         mainService.getWin().webContents.send('msg-receive', str)
+    }else{
+        console.log("未处理")
     }
 
     /**
@@ -247,16 +249,16 @@ function sayAction(str){
     } else{
         // 我发给别人的
 
-        let toClientName = mainService.vars.chatService.contactList[data['to_uid']]
-        if (toClientName === undefined){
+        let targetUid = mainService.vars.chatService.contactList[data['to_uid']].uid
+        if (targetUid === undefined){
             //联系人已经离线
             console.log("User offline now")
             mainService.getWin().webContents.send('user-offline-say', str)
         } else{
-            if (!mainService.vars.chatService.chatHistory[toClientName]) {
-                mainService.vars.chatService.chatHistory[toClientName] = []
+            if (!mainService.vars.chatService.chatHistory[targetUid]) {
+                mainService.vars.chatService.chatHistory[targetUid] = []
             }
-            mainService.vars.chatService.chatHistory[toClientName].push(data)
+            mainService.vars.chatService.chatHistory[targetUid].push(data)
         }
 
     }
@@ -385,7 +387,6 @@ function loadImageViewDetailsWindow(event,msg){
 }
 
 function sendImgOk() {
-    console.log('sent')
     /**
      * 开始发送图片
      */
@@ -406,7 +407,7 @@ function sendImgOk() {
                     +'","content":"'
                     + "<img onclick='viewImage(this)' src='" + mainService.vars.config.webServer + response.data + "' />"
                     +'"}'
-                console.log(msgStr)
+                //console.log(msgStr)
                 wsConnection.send(msgStr);
 
             }

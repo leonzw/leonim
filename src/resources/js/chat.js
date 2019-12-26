@@ -24,7 +24,6 @@ function selectTarget(name){
 // 发言
 function onMessage(event,message){
     var data = JSON.parse(message);
-
     console.log(data)
     renderMessage(data)
     scrollChatHisotryToBottom()
@@ -79,11 +78,10 @@ function sendMsg(){
 
 function flushContactList(event, message){
     var contactList = message
-    console.log(contactList)
     $('#contactList').empty()
     for (contactId in contactList){
         if (contactId != chatService.getVars().uid){
-            $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactList[contactId]['nickname'].trim() +'" onclick="changeTarget(this,\''+contactId+'\')">\n' +
+            $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactId +'" onclick="changeTarget(this,\''+contactId+'\')">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
@@ -110,7 +108,8 @@ function changeTarget(target, cid) {
     /**
      * 修改聊天标题
      */
-    document.getElementById('targetContactTitle').innerText = "与 "+ cid+" 聊天中"
+    cname = chatService.getVars().contactList[cid].nickname;
+    document.getElementById('targetContactTitle').innerText = "与 "+ cname+" 聊天中"
 
     /**
      * 找到已有的高亮，去掉高亮
