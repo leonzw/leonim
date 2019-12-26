@@ -3,8 +3,8 @@
   "mockup"  : false,
   "openDebugTool" : true,
   "ws" : {
-    "server" : "localhost",
+    "server" : "192.168.9.66",
     "port"   : 33133
   },
-  "webServer" : "http://localhost:33533"
+  "webServer" : "http://192.168.9.66:33533"
 }

@@ -7,7 +7,6 @@ ipcRenderer.on('msg-receive',onMessage)
 ipcRenderer.on('msg-contactList',flushContactList)
 ipcRenderer.on('msg-history-list-reply', flushHistory)
 ipcRenderer.on('restore-currentContact', (event,msg)=>{
-    console.log(msg)
     flushContactList(event, msg.contactList)
     selectTarget(msg.currentContact)
     resizeWindow()
@@ -24,7 +23,7 @@ function selectTarget(name){
 // 发言
 function onMessage(event,message){
     var data = JSON.parse(message);
-    console.log(data)
+    //console.log(data)
     renderMessage(data)
     scrollChatHisotryToBottom()
 }
@@ -83,7 +82,7 @@ function flushContactList(event, message){
         if (contactId != chatService.getVars().uid){
             $('#contactList').append('<div class="chat_list" id="chat_list_'+ contactId +'" onclick="changeTarget(this,\''+contactId+'\')">\n' +
                 '                        <div class="chat_people">\n' +
-                '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+                '                            <div class="chat_img"> <img src="../images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
                 '                                <h5>'+contactList[contactId]['nickname']+'\n' +
                 '                                <p>'+contactId+'</p>\n' +

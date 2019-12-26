@@ -179,6 +179,7 @@ exports.createMainWindow = () => {
 
     win.on('focus',()=>{
         app.badgeCount = 0
+        this.vars.chatService.newMsgCount = 0;
     })
 
     return win

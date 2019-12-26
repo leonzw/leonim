@@ -204,7 +204,7 @@ function loginAction(str){
             })
         }else{
             // 窗口没销毁，只是最小化了。
-            console.log("未处理")
+            console.log("未处理B")
         }
         notification.show()
     }
@@ -234,7 +234,7 @@ function sayAction(str){
         // 我发给别人的且别人是当前窗口 或者 别人发给我且别人是当前窗口
         mainService.getWin().webContents.send('msg-receive', str)
     }else{
-        console.log("未处理")
+        console.log("来的消息不是当前联系人的，应该在联系人头上飘红，目前未处理C")
     }
 
     /**
@@ -249,16 +249,16 @@ function sayAction(str){
     } else{
         // 我发给别人的
 
-        let targetUid = mainService.vars.chatService.contactList[data['to_uid']].uid
-        if (targetUid === undefined){
+        let target = mainService.vars.chatService.contactList[data['to_uid']]
+        if (target === undefined){
             //联系人已经离线
             console.log("User offline now")
             mainService.getWin().webContents.send('user-offline-say', str)
         } else{
-            if (!mainService.vars.chatService.chatHistory[targetUid]) {
-                mainService.vars.chatService.chatHistory[targetUid] = []
+            if (!mainService.vars.chatService.chatHistory[target.uid]) {
+                mainService.vars.chatService.chatHistory[target.uid] = []
             }
-            mainService.vars.chatService.chatHistory[targetUid].push(data)
+            mainService.vars.chatService.chatHistory[target.uid].push(data)
         }
 
     }
@@ -270,16 +270,18 @@ function sayAction(str){
         // 我发给别人的
     } else if( !mainService.getWin().isDestroyed() && mainService.getWin() !== null && mainService.getWin().isFocused()){
         // 当前窗口存在且是焦点
+        mainService.vars.chatService.newMsgCount = 0
     }else{
         // 该通知啦
 
+        console.log(mainService.vars.chatService.newMsgCount)
         mainService.vars.chatService.newMsgCount++
         app.badgeCount = mainService.vars.chatService.newMsgCount
 
         let tempContact = getContactByUid(data['from_uid'])
 
         let notification = new Notification({
-            title: tempContact['nickname'],
+            title: tempContact.nickname,
             "body": "新消息",
             icon: path.join(app.getAppPath(), "src", "resources", "images", "chat-tiny.png"),
         })
@@ -287,13 +289,13 @@ function sayAction(str){
         if (mainService.getWin().isDestroyed()){
             // 窗口已经销毁，点的是关闭按钮, win == null
             notification.on('click', ()=> {
-                mainService.vars.chatService.currentContactId = tempContact['uid']
+                mainService.vars.chatService.currentContactId = tempContact.uid
                 mainService.vars.chatService.reCreateChatWindow()
             })
         }else if(mainService.getWin() !== null && !mainService.getWin().isFocused()){
             // 窗口没销毁，只是不是焦点
             notification.on('click', ()=>{
-                mainService.vars.chatService.currentContactId = tempContact['uid']
+                mainService.vars.chatService.currentContactId = tempContact.uid
                 let restoreInfoObj = {
                     currentContact: mainService.vars.chatService.currentContactId,
                     contactList: mainService.vars.chatService.contactList,
@@ -304,7 +306,7 @@ function sayAction(str){
             })
         }else{
             // 窗口没销毁，只是最小化了。
-            console.log("未处理")
+            console.log("未处理A")
         }
 
 
@@ -403,10 +405,11 @@ function sendImgOk() {
 
                 let to_uid = mainService.vars.chatService.currentContactId
                 let msgStr =
-                    '{"type":"sayImg","to_uid":"'+mainService.vars.chatService.currentContactId
-                    +'","content":"'
-                    + "<img onclick='viewImage(this)' src='" + mainService.vars.config.webServer + response.data + "' />"
+                    '{"type":"sayImg","to_uid":'+to_uid + ', "from_uid":' + mainService.vars.chatService.uid
+                    +',"content":"'
+                    + "<img ondblclick='viewImage(this)' src='" + mainService.vars.config.webServer + response.data + "' />"
                     +'"}'
+
                 //console.log(msgStr)
                 wsConnection.send(msgStr);
 
