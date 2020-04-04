@@ -148,3 +148,7 @@ input::-ms-clear {display: none;}
 .input_menu{ height: 40px; background-color: #E3E3E3 }
 .input_menu button{margin-top: 5px; margin-left: 5px;}
 .imgViewDetail{cursor: pointer}
+
+.status-online { color: green}
+.status-offline { color: red}
+.status-reconnect { color: orange}

@@ -44,25 +44,36 @@ ipcMain.on('msg-image-send', prepareImg);
 ipcMain.on('msg-img-send-ok', sendImgOk);
 ipcMain.on('msg-image-view', loadImageViewDetailsWindow)
 
+let ping
+
 function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
         console.log("Connected")
         var login_data = '{"type":"login","client_name":"'+mainService.getUser().username+'", "password":"' + mainService.getUser().password + '","room_id":1}';
         wsConnection.send(login_data);
+        mainService.getWin().webContents.send('netstatus', 1);
+
+        ping = setInterval( ()=>{wsConnection.send('ping')}, 5000)
+
         //console.log(login_data)
     });
     wsConnection.on('error',(err)=>{
         console.log("Websocket 出错了 : " + err)
+        mainService.getWin().webContents.send('netstatus', 2); // 0 未知， 1 在线, 2 离线，3 重连
+        clearInterval(ping)
     })
 
     wsConnection.on('text', (str)=>{
         //console.log(str)
         onMessage(str,wsConnection)
+        mainService.getWin().webContents.send('netstatus', 1);
     })
 
     wsConnection.on('close', ()=> {
         console.log("连接关闭，定时重连");
-        connect(wsConnection);
+        mainService.getWin().webContents.send('netstatus', 3);
+        setTimeout((wsConnection)=>{ connect(wsConnection)}, 5000)
+
     });
 }
 
@@ -169,6 +180,7 @@ function loginAction(str){
          * 当前登录用户，设置一下client_id
          */
         mainService.vars.chatService.uid = data['uid']
+        mainService.getWin().webContents.send('msg-loginUser', mainService.getUser().username)
     }
 
     // 不管前端是否存在，先发个通知消息吧

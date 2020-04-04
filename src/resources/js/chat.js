@@ -13,7 +13,29 @@ ipcRenderer.on('restore-currentContact', (event,msg)=>{
 })
 ipcRenderer.on('user-offline-say', ()=>{ window.alert('联系人已经离线,发送失败')})
 ipcRenderer.on('image-clipboard-failed', ()=>{window.alert('剪切板图片不存在，请重试')})
+ipcRenderer.on('msg-loginUser', (event,msg)=>{document.querySelector('#myname').innerHTML = msg})
+ipcRenderer.on('netstatus', (event,msg) =>{
+    let statusDiv = document.querySelector("#mystatus")
+    switch (msg) {
+        case 1:
+            statusDiv.innerHTML = "在线"
+            statusDiv.className = "status-online"
+            break;
+        case 2:
+            statusDiv.innerHTML = "离线"
+            statusDiv.className = "status-offline"
+            break;
+        case 3:
+            statusDiv.innerHTML = "重连中 ..."
+            statusDiv.className = "status-reconnect"
+            break;
+        default:
+            statusDiv.innerHTML = "离线"
+            statusDiv.className = "status-offline"
+            break;
 
+    }
+})
 
 function selectTarget(name){
     var target = document.querySelector('#chat_list_'+name)
