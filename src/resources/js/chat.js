@@ -2,6 +2,7 @@ const backend = require('electron').remote
 const chatService = backend.require('./service/chatService.js')
 const { ipcRenderer } = require('electron')
 
+let connectionStatus = 0;
 
 ipcRenderer.on('msg-receive',onMessage)
 ipcRenderer.on('msg-contactList',flushContactList)
@@ -16,6 +17,7 @@ ipcRenderer.on('image-clipboard-failed', ()=>{window.alert('剪切板图片不�
 ipcRenderer.on('msg-loginUser', (event,msg)=>{document.querySelector('#myname').innerHTML = msg})
 ipcRenderer.on('netstatus', (event,msg) =>{
     let statusDiv = document.querySelector("#mystatus")
+    connectionStatus = msg
     switch (msg) {
         case 1:
             statusDiv.innerHTML = "在线"
@@ -90,9 +92,14 @@ function renderMessage(data){
 function sendMsg(){
     var msg = $('#sendMsg').val()
     if (msg.trim() != ''){
-        ipcRenderer.send('msg-send', msg)
-        $('#sendMsg').val('')
-        document.querySelector('#sendMsg').value = ''
+
+        if(connectionStatus != 1){
+            window.alert("掉线了，重新登录吧。")
+        }else{
+            ipcRenderer.send('msg-send', msg)
+            $('#sendMsg').val('')
+            document.querySelector('#sendMsg').value = ''
+        }
     }
 
 }

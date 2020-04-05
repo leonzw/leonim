@@ -204,6 +204,7 @@ module.exports.vars = {
         contactList: null,
         reCreateChatWindow: null,
         windowSize: {width:1280,height:740},
+        connectionStatus: 0,
         uid: null},
     config:config
 }

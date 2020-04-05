@@ -51,7 +51,8 @@ function connect(){
         console.log("Connected")
         var login_data = '{"type":"login","client_name":"'+mainService.getUser().username+'", "password":"' + mainService.getUser().password + '","room_id":1}';
         wsConnection.send(login_data);
-        mainService.getWin().webContents.send('netstatus', 1);
+        mainService.vars.chatService.connectionStatus = 1
+        mainService.getWin().webContents.send('netstatus', mainService.vars.chatService.connectionStatus);
 
         ping = setInterval( ()=>{wsConnection.send('ping')}, 5000)
 
@@ -59,19 +60,21 @@ function connect(){
     });
     wsConnection.on('error',(err)=>{
         console.log("Websocket 出错了 : " + err)
-        mainService.getWin().webContents.send('netstatus', 2); // 0 未知， 1 在线, 2 离线，3 重连
+        mainService.vars.chatService.connectionStatus = 2
+        mainService.getWin().webContents.send('netstatus', mainService.vars.chatService.connectionStatus); // 0 未知， 1 在线, 2 离线，3 重连
         clearInterval(ping)
     })
 
     wsConnection.on('text', (str)=>{
         //console.log(str)
         onMessage(str,wsConnection)
-        mainService.getWin().webContents.send('netstatus', 1);
+        mainService.vars.chatService.connectionStatus = 1
     })
 
     wsConnection.on('close', ()=> {
         console.log("连接关闭，定时重连");
-        mainService.getWin().webContents.send('netstatus', 3);
+        mainService.vars.chatService.connectionStatus = 3
+        mainService.getWin().webContents.send('netstatus', mainService.vars.chatService.connectionStatus);
         setTimeout((wsConnection)=>{ connect(wsConnection)}, 5000)
 
     });
@@ -340,9 +343,11 @@ function reCreateChatWindow(){
         let restoreInfoObj = {
             currentContact: mainService.vars.chatService.currentContactId,
             contactList: mainService.vars.chatService.contactList,
-            chatHistory: mainService.vars.chatService.chatHistory
+            chatHistory: mainService.vars.chatService.chatHistory,
         }
         mainService.vars.win.webContents.send('restore-currentContact', restoreInfoObj)
+        mainService.getWin().webContents.send('netstatus', mainService.vars.chatService.connectionStatus)
+        mainService.getWin().webContents.send('msg-loginUser', mainService.getUser().username)
     })
 }
 
