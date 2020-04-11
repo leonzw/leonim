@@ -32,7 +32,6 @@ exports.openChatWindow = (username,password) =>{
     /**
      * Open chat window
      */
-    //console.log(win)
     // 打开开发者工具
     if(config.openDebugTool === true){
         win.webContents.openDevTools()
@@ -153,11 +152,9 @@ exports.createMainWindow = () => {
     })
 
     win.on('minimize', ()=>{
-        //console.log("Window Minimized")
         win.setSkipTaskbar(false)
     });
     win.on("restore",()=>{
-        //console.log("Window restore again")
         win.setSkipTaskbar(true)
     });
 

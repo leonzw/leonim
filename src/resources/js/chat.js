@@ -47,7 +47,6 @@ function selectTarget(name){
 // 发言
 function onMessage(event,message){
     var data = JSON.parse(message);
-    //console.log(data)
     renderMessage(data)
     scrollChatHisotryToBottom()
 }
@@ -168,7 +167,6 @@ var resizeTimer = null
 function resizeWindow(){
     // if (resizeTimer) clearTimeout(resizeTimer)
     // resizeTimer = setTimeout(()=>{
-    //     console.log(window.outerHeight)
     // }, 500)
     let leftListHeight = window.outerHeight - 83
     let leftListInboxChatHeight = window.outerHeight - 83 - 77

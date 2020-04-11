@@ -25,7 +25,6 @@ app.on('activate', () => {
      */
     mainService.vars.chatService.newMsgCount = 0;   // 新消息改成0
     app.badgeCount = 0
-    //console.log(mainService.getWin())
     if (mainService.getWin() === null || mainService.getWin().isDestroyed()) {
         mainService.vars.chatService.reCreateChatWindow()
     }else {
@@ -48,7 +47,6 @@ let ping
 
 function connect(){
     wsConnection = ws.connect(wsUrl, ()=>{
-        console.log("Connected")
         var login_data = '{"type":"login","client_name":"'+mainService.getUser().username+'", "password":"' + mainService.getUser().password + '","room_id":1}';
         wsConnection.send(login_data);
         mainService.vars.chatService.connectionStatus = 1
@@ -56,7 +54,6 @@ function connect(){
 
         ping = setInterval( ()=>{wsConnection.send('ping')}, 5000)
 
-        //console.log(login_data)
     });
     wsConnection.on('error',(err)=>{
         console.log("Websocket 出错了 : " + err)
@@ -66,7 +63,6 @@ function connect(){
     })
 
     wsConnection.on('text', (str)=>{
-        //console.log(str)
         onMessage(str,wsConnection)
         mainService.vars.chatService.connectionStatus = 1
     })
@@ -82,7 +78,6 @@ function connect(){
 
 
 function onMessage(str,wsConnection){
-    console.log("--- [Server info] : " + str);
     let data = JSON.parse(str);
     switch(data['type']){
         // 服务端ping客户端
@@ -106,7 +101,6 @@ function onMessage(str,wsConnection){
         case 'logout':
             //{"type":"logout","client_id":xxx,"time":"xxx"}
             delete mainService.vars.chatService.contactList[data['from_uid']];
-            //console.log(mainService.vars.chatService.contactList)
             if (!mainService.getWin().isDestroyed()) {
                 mainService.getWin().webContents.send('msg-contactList', mainService.vars.chatService.contactList)
             }
@@ -120,7 +114,6 @@ function onMessage(str,wsConnection){
  * @param msg
  */
 function sendMsg(event,msg){
-    //console.log("发送" + msg)
 
     let to_uid = mainService.vars.chatService.currentContactId
     let msgStr =
@@ -156,8 +149,6 @@ function getChatHistory(event,uid){
 
 
 function getContactByUid(uid){
-    //console.log(uid)
-    //console.log(mainService.vars.chatService.contactList)
     if (mainService.vars.chatService.contactList[uid] !== 'undefined'){
         return mainService.vars.chatService.contactList[uid]
     } else{
@@ -171,7 +162,7 @@ function loginAction(str){
     let data = JSON.parse(str);
     //{"type":"login","client_id":xxx,"client_name":"xxx","client_list":"[...]","time":"xxx"}
     //say(data['client_id'], data['name'],  data['name']+' 加入了聊天室', data['time']);
-    //console.log(data)
+
     if(mainService.vars.chatService.contactList === null){
         mainService.vars.chatService.contactList = data['client_list'];
     }else{
@@ -238,7 +229,6 @@ function sayAction(str){
     /**
      * 通知渲染更新
      */
-    // console.log(mainService.vars.chatService)
     if (typeof mainService.getWin() === 'undefined' ||
         mainService.getWin() === null ||
         mainService.getWin().isDestroyed()) {
@@ -267,7 +257,6 @@ function sayAction(str){
         let target = mainService.vars.chatService.contactList[data['to_uid']]
         if (target === undefined){
             //联系人已经离线
-            console.log("User offline now")
             mainService.getWin().webContents.send('user-offline-say', str)
         } else{
             if (!mainService.vars.chatService.chatHistory[target.uid]) {
@@ -288,8 +277,6 @@ function sayAction(str){
         mainService.vars.chatService.newMsgCount = 0
     }else{
         // 该通知啦
-
-        console.log(mainService.vars.chatService.newMsgCount)
         mainService.vars.chatService.newMsgCount++
         app.badgeCount = mainService.vars.chatService.newMsgCount
 
@@ -365,7 +352,6 @@ function prepareImg() {
     let buff = Buffer.alloc(image.toPNG().length, image.toPNG(), 'base64')
 
     fs.write(fd,buff,0,buff.length,0,(err,bytesWritten)=>{
-        //console.log(err,bytesWritten)
         if (bytesWritten === 0){
             // image null
             mainService.getWin().webContents.send('image-clipboard-failed');
@@ -416,7 +402,6 @@ function sendImgOk() {
         img: imgNative.toDataURL()
         })
         .then(function (response) {
-            //console.log(response);
             if (response.data !== null){
                 // Say msg
 
@@ -427,7 +412,6 @@ function sendImgOk() {
                     + "<img ondblclick='viewImage(this)' src='" + mainService.vars.config.webServer + response.data + "' />"
                     +'"}'
 
-                //console.log(msgStr)
                 wsConnection.send(msgStr);
 
             }
